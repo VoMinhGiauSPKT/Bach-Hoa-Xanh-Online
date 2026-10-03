@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="BachHoaXanhPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Auth Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.auth.Auth</class>
+
+        <properties>
+            <!-- JDBC Connection Settings (Neon Database) -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://ep-fancy-bar-b4ucs4nc-pooler.c-6.us-east-2.aws.neon.tech:5432/banhhoaxanhdb?sslmode=require" />
+            <property name="jakarta.persistence.jdbc.user" value="neondb_owner" />
+            <property name="jakarta.persistence.jdbc.password" value="npg_V2kS1syQPYae" />
+
+            <!-- Hibernate Dialect -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+
+            <!-- Connection Pooling using HikariCP -->
+            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider" />
+            <property name="hibernate.hikari.minimumIdle" value="2" />
+            <property name="hibernate.hikari.maximumPoolSize" value="10" />
+            <property name="hibernate.hikari.idleTimeout" value="30000" />
+            <property name="hibernate.hikari.connectionTimeout" value="20000" />
+            <property name="hibernate.hikari.maxLifetime" value="600000" />
+            <!-- Neon pgBouncer Transaction Pooling tuning -->
+            <property name="hibernate.hikari.dataSource.prepareThreshold" value="0" />
+
+            <!-- Case sensitivity / Quoting identifiers for Neon -->
+            <property name="hibernate.globally_quoted_identifiers" value="true" />
+
+            <!-- Schema is already created on Neon -->
+            <property name="hibernate.hbm2ddl.auto" value="none" />
+
+            <!-- SQL output -->
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.format_sql" value="true" />
+        </properties>
+    </persistence-unit>
+
+</persistence>
