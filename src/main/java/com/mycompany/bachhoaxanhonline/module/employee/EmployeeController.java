@@ -1,7 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.employee;
 
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
-import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,28 +23,7 @@ public class EmployeeController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         setupCorsHeaders(req, resp);
 
-        // 1. Middleware / AuthFilter: Kiểm tra và xác thực Bearer Access Token
-        String authHeader = req.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
-            return;
-        }
-
-        String token = authHeader.substring(7).trim();
-        if (!JwtUtil.validateToken(token)) {
-            JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
-            return;
-        }
-
-        // 2. Middleware / AdminRoleFilter: Kiểm tra quyền ADMIN
-        String role = JwtUtil.getRoleFromToken(token);
-        if (role == null || !"ADMIN".equalsIgnoreCase(role)) {
-            JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Người gọi không phải là ADMIN"));
-            return;
-        }
+        // Xác thực token và kiểm tra quyền ADMIN đã được thực hiện tập trung bởi JwtAuthFilter
 
         // 3. Xử lý tạo tài khoản nhân viên
         try {
