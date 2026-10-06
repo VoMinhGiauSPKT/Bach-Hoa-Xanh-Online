@@ -8,7 +8,7 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <!-- Auth Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.auth.Auth</class>
+        <class>com.mycompany.bachhoaxanhonline.module.auth.Auth</class>
 
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->

@@ -37,6 +37,7 @@ public class JsonUtil {
     }
 
     public static void sendJsonResponse(HttpServletResponse response, int statusCode, Object data) throws IOException {
+        response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(statusCode);
         response.getWriter().write(toJson(data));

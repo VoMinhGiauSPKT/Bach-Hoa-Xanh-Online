@@ -6,29 +6,29 @@ import jakarta.persistence.Persistence;
 
 public class JpaUtil {
 
-    private static final EntityManagerFactory emf;
+    private static volatile EntityManagerFactory emf;
 
-    static {
-        try {
-            emf = Persistence.createEntityManagerFactory("BachHoaXanhPU");
-        } catch (Throwable ex) {
-            System.err.println("Failed to initialize EntityManagerFactory: " + ex);
-            ex.printStackTrace();
-            throw new ExceptionInInitializerError(ex);
+    public static synchronized EntityManagerFactory getEntityManagerFactory() {
+        if (emf == null || !emf.isOpen()) {
+            try {
+                emf = Persistence.createEntityManagerFactory("BachHoaXanhPU");
+            } catch (Throwable ex) {
+                System.err.println("Failed to initialize EntityManagerFactory: " + ex);
+                ex.printStackTrace();
+                throw new ExceptionInInitializerError(ex);
+            }
         }
-    }
-
-    public static EntityManager getEntityManager() {
-        return emf.createEntityManager();
-    }
-
-    public static EntityManagerFactory getEntityManagerFactory() {
         return emf;
     }
 
-    public static void close() {
+    public static EntityManager getEntityManager() {
+        return getEntityManagerFactory().createEntityManager();
+    }
+
+    public static synchronized void close() {
         if (emf != null && emf.isOpen()) {
             emf.close();
+            emf = null;
         }
     }
 }
