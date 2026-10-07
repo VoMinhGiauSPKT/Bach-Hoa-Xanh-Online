@@ -81,12 +81,25 @@ public class JwtAuthFilterTest {
         Assertions.assertTrue(filter.isAuthorized("/review", "GET", "STAFF"));
         Assertions.assertFalse(filter.isAuthorized("/review", "GET", "CUSTOMER"));
 
+        // Quản lý khuyến mãi /promotion: Chỉ ADMIN ngoại trừ /promotion/available
+        Assertions.assertTrue(filter.isAuthorized("/promotion", "GET", "ADMIN"));
+        Assertions.assertTrue(filter.isAuthorized("/promotion", "POST", "ADMIN"));
+        Assertions.assertTrue(filter.isAuthorized("/promotion/CODE123", "PUT", "ADMIN"));
+        Assertions.assertTrue(filter.isAuthorized("/promotion/CODE123", "DELETE", "ADMIN"));
+        Assertions.assertFalse(filter.isAuthorized("/promotion", "GET", "CUSTOMER"));
+        Assertions.assertFalse(filter.isAuthorized("/promotion", "GET", "STAFF"));
+
+        Assertions.assertTrue(filter.isAuthorized("/promotion/available", "GET", "CUSTOMER"));
+        Assertions.assertTrue(filter.isAuthorized("/promotion/available", "GET", "STAFF"));
+        Assertions.assertTrue(filter.isAuthorized("/promotion/available", "GET", "ADMIN"));
+
         // 3. Nghiệp vụ khách hàng / chung: Bất kỳ role hợp lệ đã đăng nhập
         Assertions.assertTrue(filter.isAuthorized("/customer/profile", "GET", "CUSTOMER"));
         Assertions.assertTrue(filter.isAuthorized("/customer/profile", "GET", "ADMIN"));
         Assertions.assertTrue(filter.isAuthorized("/customer/profile", "GET", "STAFF"));
         Assertions.assertFalse(filter.isAuthorized("/customer/profile", "GET", null));
         Assertions.assertFalse(filter.isAuthorized("/customer/profile", "GET", ""));
+
     }
 
     @Test

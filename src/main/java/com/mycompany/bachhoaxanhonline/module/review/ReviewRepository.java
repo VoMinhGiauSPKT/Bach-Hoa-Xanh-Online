@@ -70,7 +70,7 @@ public class ReviewRepository {
         EntityManager em = JpaUtil.getEntityManager();
         try {
             Number count = (Number) em.createNativeQuery(
-                    "SELECT COUNT(*) FROM \"DanhGia\" WHERE \"maKhachHang\" = :customerId AND \"maSanPham\" = :productId")
+                    "SELECT COUNT(*) FROM \"DanhGia\" WHERE \"maKhachHang\" = :customerId AND \"maSanPham\" = :productId AND \"Deleted\" = FALSE")
                     .setParameter("customerId", customerId.trim())
                     .setParameter("productId", productId.trim())
                     .getSingleResult();
