@@ -46,7 +46,13 @@ public class JwtAuthFilterTest {
         Assertions.assertTrue(filter.isPublicEndpoint("/style.css"));
         Assertions.assertTrue(filter.isPublicEndpoint("/images/logo.png"));
 
+        // Review public endpoint
+        Assertions.assertTrue(filter.isPublicEndpoint("/review/product/SP01"));
+        Assertions.assertTrue(filter.isPublicEndpoint("/review/product"));
+
         // Protected routes
+        Assertions.assertFalse(filter.isPublicEndpoint("/review"));
+        Assertions.assertFalse(filter.isPublicEndpoint("/review/me"));
         Assertions.assertFalse(filter.isPublicEndpoint("/employee"));
         Assertions.assertFalse(filter.isPublicEndpoint("/employee/create"));
         Assertions.assertFalse(filter.isPublicEndpoint("/admin/dashboard"));
@@ -69,6 +75,11 @@ public class JwtAuthFilterTest {
         Assertions.assertTrue(filter.isAuthorized("/staff/orders", "GET", "ADMIN"));
         Assertions.assertTrue(filter.isAuthorized("/staff/orders", "GET", "STAFF"));
         Assertions.assertFalse(filter.isAuthorized("/staff/orders", "GET", "CUSTOMER"));
+
+        // Kiểm duyệt đánh giá GET /review: ADMIN hoặc STAFF
+        Assertions.assertTrue(filter.isAuthorized("/review", "GET", "ADMIN"));
+        Assertions.assertTrue(filter.isAuthorized("/review", "GET", "STAFF"));
+        Assertions.assertFalse(filter.isAuthorized("/review", "GET", "CUSTOMER"));
 
         // 3. Nghiệp vụ khách hàng / chung: Bất kỳ role hợp lệ đã đăng nhập
         Assertions.assertTrue(filter.isAuthorized("/customer/profile", "GET", "CUSTOMER"));
