@@ -10,6 +10,12 @@
         <!-- Auth Feature Entity -->
         <class>com.mycompany.bachhoaxanhonline.module.auth.Auth</class>
 
+        <!-- Category Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.module.category.Category</class>
+
+        <!-- Product Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.module.product.Product</class>
+
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
