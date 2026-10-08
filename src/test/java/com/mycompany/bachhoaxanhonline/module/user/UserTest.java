@@ -1,9 +1,8 @@
 package com.mycompany.bachhoaxanhonline.module.user;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
-import com.mycompany.bachhoaxanhonline.module.auth.Auth;
-import com.mycompany.bachhoaxanhonline.module.employee.Employee;
-import com.mycompany.bachhoaxanhonline.module.employee.EmployeeRole;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -61,7 +60,7 @@ public class UserTest {
             tx.commit();
 
             // Gọi service getProfile
-            UserResponse.ApiResponse<UserResponse.UserProfileData> resp = userService.getProfile(customerId);
+            ApiResponse<UserResponse.UserProfileData> resp = userService.getProfile(customerId);
 
             Assertions.assertEquals(200, resp.getStatus());
             Assertions.assertEquals("Lấy thông tin tài khoản thành công", resp.getMessage());
@@ -128,7 +127,7 @@ public class UserTest {
             tx.commit();
 
             // Gọi service getProfile
-            UserResponse.ApiResponse<UserResponse.UserProfileData> resp = userService.getProfile(employeeId);
+            ApiResponse<UserResponse.UserProfileData> resp = userService.getProfile(employeeId);
 
             Assertions.assertEquals(200, resp.getStatus());
             Assertions.assertNotNull(resp.getData());
@@ -225,7 +224,7 @@ public class UserTest {
             // 7. Đổi mật khẩu thành công -> 200 OK
             UserRequest.ChangePasswordRequest reqSuccess = new UserRequest.ChangePasswordRequest(
                     oldPassword, "NewPassword456!", "NewPassword456!");
-            UserResponse.ApiResponse<Void> resp = userService.changePassword(userId, reqSuccess);
+            ApiResponse<Void> resp = userService.changePassword(userId, reqSuccess);
 
             Assertions.assertEquals(200, resp.getStatus());
             Assertions.assertEquals("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.", resp.getMessage());

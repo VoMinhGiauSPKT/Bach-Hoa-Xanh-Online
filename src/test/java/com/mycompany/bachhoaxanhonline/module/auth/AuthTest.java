@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.auth;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import java.time.LocalDate;
@@ -46,7 +48,7 @@ public class AuthTest {
         // 1. Đăng ký thành công (201)
         AuthRequest.RegisterRequest req = new AuthRequest.RegisterRequest(
                 username, "Nguyen Van Test", email, phone, "Password123!", LocalDate.of(2000, 1, 1));
-        AuthResponse.ApiResponse<AuthResponse.RegisterData> resp = service.registerCustomer(req);
+        ApiResponse<AuthResponse.RegisterData> resp = service.registerCustomer(req);
 
         Assertions.assertEquals(201, resp.getStatus());
         Assertions.assertEquals("Đăng ký thành công", resp.getMessage());
@@ -144,7 +146,7 @@ public class AuthTest {
         Assertions.assertEquals(403, exRevoked.getStatusCode());
 
         // 4. Thiết bị 2 refresh bằng token 2 hợp lệ -> Thành công 200
-        AuthResponse.ApiResponse<AuthResponse.TokenData> refreshResp = service.refreshToken(tokenDev2);
+        ApiResponse<AuthResponse.TokenData> refreshResp = service.refreshToken(tokenDev2);
         Assertions.assertEquals(200, refreshResp.getStatus());
         Assertions.assertNotNull(refreshResp.getData().getAccessToken());
 

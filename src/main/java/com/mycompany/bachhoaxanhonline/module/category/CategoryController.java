@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.category;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -29,7 +31,7 @@ public class CategoryController extends HttpServlet {
         try {
             if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
                 // 1. GET /category -> Lấy danh sách (Public)
-                CategoryResponse.ApiResponse<List<CategoryResponse.CategoryPublicItem>> response =
+                ApiResponse<List<CategoryResponse.CategoryPublicItem>> response =
                         categoryService.getPublicCategories();
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             } else {
@@ -37,22 +39,22 @@ public class CategoryController extends HttpServlet {
                 String authError = authenticateRole(req, "ADMIN", "STAFF");
                 if (authError != null) {
                     int statusCode = authError.contains("Chưa đăng nhập") ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_FORBIDDEN;
-                    JsonUtil.sendJsonResponse(resp, statusCode, new CategoryResponse.ApiResponse<>(statusCode, authError));
+                    JsonUtil.sendJsonResponse(resp, statusCode, new ApiResponse<>(statusCode, authError));
                     return;
                 }
 
                 String id = extractIdFromPath(pathInfo);
-                CategoryResponse.ApiResponse<CategoryResponse.CategoryData> response =
+                ApiResponse<CategoryResponse.CategoryData> response =
                         categoryService.getCategoryDetail(id);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             }
         } catch (CategoryService.CategoryException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new CategoryResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -64,23 +66,23 @@ public class CategoryController extends HttpServlet {
         String authError = authenticateRole(req, "ADMIN", "STAFF");
         if (authError != null) {
             int statusCode = authError.contains("Chưa đăng nhập") ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_FORBIDDEN;
-            JsonUtil.sendJsonResponse(resp, statusCode, new CategoryResponse.ApiResponse<>(statusCode, authError));
+            JsonUtil.sendJsonResponse(resp, statusCode, new ApiResponse<>(statusCode, authError));
             return;
         }
 
         try {
             CategoryRequest.CreateCategoryRequest request = JsonUtil.fromJson(
                     req.getReader(), CategoryRequest.CreateCategoryRequest.class);
-            CategoryResponse.ApiResponse<CategoryResponse.CategoryData> response =
+            ApiResponse<CategoryResponse.CategoryData> response =
                     categoryService.createCategory(request);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
         } catch (CategoryService.CategoryException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new CategoryResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -92,7 +94,7 @@ public class CategoryController extends HttpServlet {
         String authError = authenticateRole(req, "ADMIN", "STAFF");
         if (authError != null) {
             int statusCode = authError.contains("Chưa đăng nhập") ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_FORBIDDEN;
-            JsonUtil.sendJsonResponse(resp, statusCode, new CategoryResponse.ApiResponse<>(statusCode, authError));
+            JsonUtil.sendJsonResponse(resp, statusCode, new ApiResponse<>(statusCode, authError));
             return;
         }
 
@@ -100,23 +102,23 @@ public class CategoryController extends HttpServlet {
         String id = extractIdFromPath(pathInfo);
         if (id == null || id.isEmpty()) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã loại sản phẩm trên đường dẫn"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã loại sản phẩm trên đường dẫn"));
             return;
         }
 
         try {
             CategoryRequest.UpdateCategoryRequest request = JsonUtil.fromJson(
                     req.getReader(), CategoryRequest.UpdateCategoryRequest.class);
-            CategoryResponse.ApiResponse<CategoryResponse.CategoryData> response =
+            ApiResponse<CategoryResponse.CategoryData> response =
                     categoryService.updateCategory(id, request);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (CategoryService.CategoryException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new CategoryResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -128,7 +130,7 @@ public class CategoryController extends HttpServlet {
         String authError = authenticateRole(req, "ADMIN");
         if (authError != null) {
             int statusCode = authError.contains("Chưa đăng nhập") ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_FORBIDDEN;
-            JsonUtil.sendJsonResponse(resp, statusCode, new CategoryResponse.ApiResponse<>(statusCode, authError));
+            JsonUtil.sendJsonResponse(resp, statusCode, new ApiResponse<>(statusCode, authError));
             return;
         }
 
@@ -136,20 +138,20 @@ public class CategoryController extends HttpServlet {
         String id = extractIdFromPath(pathInfo);
         if (id == null || id.isEmpty()) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã loại sản phẩm trên đường dẫn"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã loại sản phẩm trên đường dẫn"));
             return;
         }
 
         try {
-            CategoryResponse.ApiResponse<Void> response = categoryService.deleteCategory(id);
+            ApiResponse<Void> response = categoryService.deleteCategory(id);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (CategoryService.CategoryException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new CategoryResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new CategoryResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 

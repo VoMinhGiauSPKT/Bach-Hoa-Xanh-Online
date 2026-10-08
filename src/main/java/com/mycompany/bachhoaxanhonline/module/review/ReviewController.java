@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.review;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.middleware.SecurityContext;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import jakarta.servlet.ServletException;
@@ -41,15 +43,15 @@ public class ReviewController extends HttpServlet {
                 handleGetAdminReviews(req, resp);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
             }
         } catch (ReviewService.ReviewException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new ReviewResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -68,15 +70,15 @@ public class ReviewController extends HttpServlet {
                 handleCreateReview(req, resp);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
             }
         } catch (ReviewService.ReviewException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new ReviewResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -96,15 +98,15 @@ public class ReviewController extends HttpServlet {
                 handleUpdateReview(req, resp, reviewId);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
             }
         } catch (ReviewService.ReviewException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new ReviewResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -124,15 +126,15 @@ public class ReviewController extends HttpServlet {
                 handleDeleteReview(req, resp, reviewId);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /review" + pathInfo));
             }
         } catch (ReviewService.ReviewException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new ReviewResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -143,7 +145,7 @@ public class ReviewController extends HttpServlet {
         int limit = parseInt(req.getParameter("limit"), 5);
         Integer rating = parseNullableInt(req.getParameter("rating"));
 
-        ReviewResponse.ApiResponse<ReviewResponse.ProductReviewsData> response =
+        ApiResponse<ReviewResponse.ProductReviewsData> response =
                 reviewService.getProductReviews(productId, rating, page, limit);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
@@ -152,12 +154,12 @@ public class ReviewController extends HttpServlet {
         String userId = SecurityContext.getUserId(req);
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return;
         }
 
         ReviewRequest.CreateReviewRequest request = JsonUtil.fromJson(req.getReader(), ReviewRequest.CreateReviewRequest.class);
-        ReviewResponse.ApiResponse<ReviewResponse.CreateReviewData> response = reviewService.createReview(userId, request);
+        ApiResponse<ReviewResponse.CreateReviewData> response = reviewService.createReview(userId, request);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
     }
 
@@ -165,12 +167,12 @@ public class ReviewController extends HttpServlet {
         String userId = SecurityContext.getUserId(req);
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return;
         }
 
         ReviewRequest.UpdateReviewRequest request = JsonUtil.fromJson(req.getReader(), ReviewRequest.UpdateReviewRequest.class);
-        ReviewResponse.ApiResponse<ReviewResponse.UpdateReviewData> response = reviewService.updateReview(userId, reviewId, request);
+        ApiResponse<ReviewResponse.UpdateReviewData> response = reviewService.updateReview(userId, reviewId, request);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 
@@ -180,11 +182,11 @@ public class ReviewController extends HttpServlet {
 
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return;
         }
 
-        ReviewResponse.ApiResponse<Void> response = reviewService.deleteReview(userId, userRole, reviewId);
+        ApiResponse<Void> response = reviewService.deleteReview(userId, userRole, reviewId);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 
@@ -194,13 +196,13 @@ public class ReviewController extends HttpServlet {
 
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return;
         }
 
         if (userRole != null && ("ADMIN".equalsIgnoreCase(userRole) || "STAFF".equalsIgnoreCase(userRole))) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản không phải là khách hàng (CUSTOMER)"));
+                    new ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản không phải là khách hàng (CUSTOMER)"));
             return;
         }
 
@@ -208,7 +210,7 @@ public class ReviewController extends HttpServlet {
         int limit = parseInt(req.getParameter("limit"), 10);
         Integer rating = parseNullableInt(req.getParameter("rating"));
 
-        ReviewResponse.ApiResponse<ReviewResponse.MyReviewsData> response = reviewService.getMyReviews(userId, rating, page, limit);
+        ApiResponse<ReviewResponse.MyReviewsData> response = reviewService.getMyReviews(userId, rating, page, limit);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 
@@ -218,7 +220,7 @@ public class ReviewController extends HttpServlet {
         // Chỉ cho phép STAFF hoặc ADMIN
         if (userRole == null || (!"ADMIN".equalsIgnoreCase(userRole) && !"STAFF".equalsIgnoreCase(userRole))) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN,
-                    new ReviewResponse.ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Khách hàng (CUSTOMER) cố tình truy cập vào trang kiểm duyệt nội bộ"));
+                    new ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Khách hàng (CUSTOMER) cố tình truy cập vào trang kiểm duyệt nội bộ"));
             return;
         }
 
@@ -230,7 +232,7 @@ public class ReviewController extends HttpServlet {
         String keyword = req.getParameter("keyword");
         Boolean isDeleted = parseNullableBoolean(req.getParameter("isDeleted"));
 
-        ReviewResponse.ApiResponse<ReviewResponse.AdminReviewsData> response =
+        ApiResponse<ReviewResponse.AdminReviewsData> response =
                 reviewService.getAdminReviews(isDeleted, productId, customerId, rating, keyword, page, limit);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }

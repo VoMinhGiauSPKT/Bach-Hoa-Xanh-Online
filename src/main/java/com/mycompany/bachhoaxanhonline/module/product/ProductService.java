@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.product;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.category.CategoryRepository;
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,7 +46,7 @@ public class ProductService {
         }
     }
 
-    public ProductResponse.ApiResponse<ProductResponse.ProductListData> getProducts(
+    public ApiResponse<ProductResponse.ProductListData> getProducts(
             String pageStr, String limitStr, String keyword, String categoryId, String sortBy, String inStockStr) {
 
         int page = 1;
@@ -104,7 +106,7 @@ public class ProductService {
 
         ProductResponse.ProductListData listData = new ProductResponse.ProductListData(total, page, limit, productItems);
 
-        return new ProductResponse.ApiResponse<>(200, "Lấy danh sách sản phẩm thành công", listData);
+        return new ApiResponse<>(200, "Lấy danh sách sản phẩm thành công", listData);
     }
 
     private ProductResponse.ProductItem mapToProductItem(Product p) {
@@ -130,7 +132,7 @@ public class ProductService {
         );
     }
 
-    public ProductResponse.ApiResponse<ProductResponse.ProductDetailData> getProductDetail(String id) {
+    public ApiResponse<ProductResponse.ProductDetailData> getProductDetail(String id) {
         if (id == null || id.trim().isEmpty()) {
             throw new ProductException(400, "Mã sản phẩm không được để trống");
         }
@@ -175,10 +177,10 @@ public class ProductService {
                 rating.getTotalReviews()
         );
 
-        return new ProductResponse.ApiResponse<>(200, "Lấy chi tiết sản phẩm thành công", detailData);
+        return new ApiResponse<>(200, "Lấy chi tiết sản phẩm thành công", detailData);
     }
 
-    public ProductResponse.ApiResponse<ProductResponse.CreateProductData> createProduct(ProductRequest.CreateProductRequest request) {
+    public ApiResponse<ProductResponse.CreateProductData> createProduct(ProductRequest.CreateProductRequest request) {
         if (request == null) {
             throw new ProductException(400, "Dữ liệu yêu cầu không được để trống");
         }
@@ -258,10 +260,10 @@ public class ProductService {
                 product.getHanSuDung()
         );
 
-        return new ProductResponse.ApiResponse<>(201, "Tạo sản phẩm / nhập lô hàng mới thành công", data);
+        return new ApiResponse<>(201, "Tạo sản phẩm / nhập lô hàng mới thành công", data);
     }
 
-    public ProductResponse.ApiResponse<ProductResponse.UpdateProductData> updateProduct(String productId, ProductRequest.UpdateProductRequest request) {
+    public ApiResponse<ProductResponse.UpdateProductData> updateProduct(String productId, ProductRequest.UpdateProductRequest request) {
         if (productId == null || productId.trim().isEmpty()) {
             throw new ProductException(400, "Mã sản phẩm không được để trống");
         }
@@ -316,10 +318,10 @@ public class ProductService {
                 request.getExpiryDate()
         );
 
-        return new ProductResponse.ApiResponse<>(200, "Cập nhật sản phẩm thành công", data);
+        return new ApiResponse<>(200, "Cập nhật sản phẩm thành công", data);
     }
 
-    public ProductResponse.ApiResponse<Void> deleteProduct(String id) {
+    public ApiResponse<Void> deleteProduct(String id) {
         if (id == null || id.trim().isEmpty()) {
             throw new ProductException(400, "Mã sản phẩm không được để trống");
         }
@@ -329,6 +331,6 @@ public class ProductService {
             throw new ProductException(404, "Không tìm thấy sản phẩm hoặc sản phẩm này vốn đã bị xóa trước đó.");
         }
 
-        return new ProductResponse.ApiResponse<>(200, "Xóa sản phẩm thành công");
+        return new ApiResponse<>(200, "Xóa sản phẩm thành công");
     }
 }

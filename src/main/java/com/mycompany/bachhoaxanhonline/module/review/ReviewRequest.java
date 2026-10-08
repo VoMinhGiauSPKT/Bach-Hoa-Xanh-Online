@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.review;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

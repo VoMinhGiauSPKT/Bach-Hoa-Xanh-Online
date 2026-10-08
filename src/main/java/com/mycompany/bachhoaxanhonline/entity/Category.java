@@ -1,4 +1,4 @@
-package com.mycompany.bachhoaxanhonline.module.category;
+package com.mycompany.bachhoaxanhonline.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;

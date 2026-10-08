@@ -1,4 +1,4 @@
-package com.mycompany.bachhoaxanhonline.module.promotion;
+package com.mycompany.bachhoaxanhonline.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package com.mycompany.bachhoaxanhonline.module.employee;
+package com.mycompany.bachhoaxanhonline.entity;
 
 /**
  * Enum đại diện cho các chức vụ của nhân viên tương ứng với enum_chucvu_nhanvien trong PostgreSQL:

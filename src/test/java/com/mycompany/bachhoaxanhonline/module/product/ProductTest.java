@@ -1,6 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.product;
 
-import com.mycompany.bachhoaxanhonline.module.category.Category;
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.category.CategoryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -63,7 +64,7 @@ public class ProductTest {
     @Test
     public void testGetProductsDefaultPagination() {
         ProductService service = new ProductService();
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> response =
+        ApiResponse<ProductResponse.ProductListData> response =
                 service.getProducts(null, null, null, null, null, null);
 
         Assertions.assertEquals(200, response.getStatus());
@@ -88,20 +89,20 @@ public class ProductTest {
         ProductService service = new ProductService();
 
         // 1. Filter by categoryId
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> catResp =
+        ApiResponse<ProductResponse.ProductListData> catResp =
                 service.getProducts("1", "10", null, sampleCategoryId, null, null);
         Assertions.assertEquals(200, catResp.getStatus());
         Assertions.assertEquals(2, catResp.getData().getTotal());
 
         // 2. Filter inStock = true -> should only return 1 (stock 150 > 0)
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> inStockResp =
+        ApiResponse<ProductResponse.ProductListData> inStockResp =
                 service.getProducts("1", "10", null, sampleCategoryId, null, "true");
         Assertions.assertEquals(200, inStockResp.getStatus());
         Assertions.assertEquals(1, inStockResp.getData().getTotal());
         Assertions.assertEquals(150, inStockResp.getData().getProducts().get(0).getStock());
 
         // 3. Sort by price_asc
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> ascResp =
+        ApiResponse<ProductResponse.ProductListData> ascResp =
                 service.getProducts("1", "10", null, sampleCategoryId, "price_asc", null);
         Assertions.assertEquals(200, ascResp.getStatus());
         Assertions.assertEquals(2, ascResp.getData().getProducts().size());
@@ -109,7 +110,7 @@ public class ProductTest {
                 .compareTo(ascResp.getData().getProducts().get(1).getPrice()) <= 0);
 
         // 4. Sort by price_desc
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> descResp =
+        ApiResponse<ProductResponse.ProductListData> descResp =
                 service.getProducts("1", "10", null, sampleCategoryId, "price_desc", null);
         Assertions.assertEquals(200, descResp.getStatus());
         Assertions.assertEquals(2, descResp.getData().getProducts().size());
@@ -117,7 +118,7 @@ public class ProductTest {
                 .compareTo(descResp.getData().getProducts().get(1).getPrice()) >= 0);
 
         // 5. Filter by keyword
-        ProductResponse.ApiResponse<ProductResponse.ProductListData> keywordResp =
+        ApiResponse<ProductResponse.ProductListData> keywordResp =
                 service.getProducts("1", "10", "Hao Hao", sampleCategoryId, null, null);
         Assertions.assertEquals(200, keywordResp.getStatus());
         Assertions.assertEquals(1, keywordResp.getData().getTotal());
@@ -162,7 +163,7 @@ public class ProductTest {
     @Test
     public void testGetProductDetail_Success() {
         ProductService service = new ProductService();
-        ProductResponse.ApiResponse<ProductResponse.ProductDetailData> response =
+        ApiResponse<ProductResponse.ProductDetailData> response =
                 service.getProductDetail(sampleProductIdA);
 
         Assertions.assertEquals(200, response.getStatus());
@@ -226,7 +227,7 @@ public class ProductTest {
                 100
         );
 
-        ProductResponse.ApiResponse<ProductResponse.CreateProductData> response = service.createProduct(req);
+        ApiResponse<ProductResponse.CreateProductData> response = service.createProduct(req);
         Assertions.assertEquals(201, response.getStatus());
         Assertions.assertEquals("Tạo sản phẩm / nhập lô hàng mới thành công", response.getMessage());
         Assertions.assertNotNull(response.getData());
@@ -311,7 +312,7 @@ public class ProductTest {
                 LocalDate.of(2027, 6, 30)
         );
 
-        ProductResponse.ApiResponse<ProductResponse.UpdateProductData> response =
+        ApiResponse<ProductResponse.UpdateProductData> response =
                 service.updateProduct(sampleProductIdB, updateReq);
 
         Assertions.assertEquals(200, response.getStatus());
@@ -367,7 +368,7 @@ public class ProductTest {
         ));
 
         // Call deleteProduct
-        ProductResponse.ApiResponse<Void> response = service.deleteProduct(deleteProdId);
+        ApiResponse<Void> response = service.deleteProduct(deleteProdId);
         Assertions.assertEquals(200, response.getStatus());
         Assertions.assertEquals("Xóa sản phẩm thành công", response.getMessage());
 

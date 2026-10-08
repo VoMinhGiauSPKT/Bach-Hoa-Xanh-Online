@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.review;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -135,7 +137,7 @@ public class ReviewTest {
         Assertions.assertEquals(404, ex404.getStatusCode());
 
         // 2. Sản phẩm tồn tại hợp lệ -> 200 OK
-        ReviewResponse.ApiResponse<ReviewResponse.ProductReviewsData> resp =
+        ApiResponse<ReviewResponse.ProductReviewsData> resp =
                 service.getProductReviews(testProductId, null, 1, 5);
         Assertions.assertEquals(200, resp.getStatus());
         Assertions.assertNotNull(resp.getData());
@@ -167,7 +169,7 @@ public class ReviewTest {
         // 3. Khách hàng TEST_CUSTOMER đã mua -> 201 Created thành công
         ReviewRequest.CreateReviewRequest validReq = new ReviewRequest.CreateReviewRequest(
                 testProductId, 5, "Sua uong rat ngon va dam da!");
-        ReviewResponse.ApiResponse<ReviewResponse.CreateReviewData> resp201 =
+        ApiResponse<ReviewResponse.CreateReviewData> resp201 =
                 service.createReview(TEST_CUSTOMER_ID, validReq);
         Assertions.assertEquals(201, resp201.getStatus());
         Assertions.assertNotNull(resp201.getData().getReviewId());
@@ -200,7 +202,7 @@ public class ReviewTest {
         Assertions.assertEquals(403, ex403.getStatusCode());
 
         // 2. Chính chủ cập nhật -> 200 OK
-        ReviewResponse.ApiResponse<ReviewResponse.UpdateReviewData> resp200 =
+        ApiResponse<ReviewResponse.UpdateReviewData> resp200 =
                 service.updateReview(TEST_CUSTOMER_ID, reviewId, updateReq);
         Assertions.assertEquals(200, resp200.getStatus());
         Assertions.assertEquals(4, resp200.getData().getRating());
@@ -224,7 +226,7 @@ public class ReviewTest {
         Assertions.assertEquals(403, ex403.getStatusCode());
 
         // Chính chủ xóa -> 200 OK thành công
-        ReviewResponse.ApiResponse<Void> delCust = service.deleteReview(TEST_CUSTOMER_ID, "CUSTOMER", id1);
+        ApiResponse<Void> delCust = service.deleteReview(TEST_CUSTOMER_ID, "CUSTOMER", id1);
         Assertions.assertEquals(200, delCust.getStatus());
 
         // 2. Tạo review khác để STAFF / ADMIN xóa
@@ -233,7 +235,7 @@ public class ReviewTest {
 
 
         // STAFF xóa bài của bất kỳ khách hàng nào -> 200 OK thành công
-        ReviewResponse.ApiResponse<Void> delStaff = service.deleteReview("STAFF_001", "STAFF", id2);
+        ApiResponse<Void> delStaff = service.deleteReview("STAFF_001", "STAFF", id2);
         Assertions.assertEquals(200, delStaff.getStatus());
     }
 
@@ -242,14 +244,14 @@ public class ReviewTest {
         ReviewService service = new ReviewService();
 
         // 1. Lấy danh sách review của chính tôi
-        ReviewResponse.ApiResponse<ReviewResponse.MyReviewsData> myResp =
+        ApiResponse<ReviewResponse.MyReviewsData> myResp =
                 service.getMyReviews(TEST_CUSTOMER_ID, null, 1, 10);
         Assertions.assertEquals(200, myResp.getStatus());
         Assertions.assertNotNull(myResp.getData());
         Assertions.assertTrue(myResp.getData().getTotal() >= 0);
 
         // 2. Lấy danh sách review cho Quản trị viên / Nhân viên
-        ReviewResponse.ApiResponse<ReviewResponse.AdminReviewsData> adminResp =
+        ApiResponse<ReviewResponse.AdminReviewsData> adminResp =
                 service.getAdminReviews(false, null, null, null, null, 1, 20);
         Assertions.assertEquals(200, adminResp.getStatus());
         Assertions.assertNotNull(adminResp.getData());

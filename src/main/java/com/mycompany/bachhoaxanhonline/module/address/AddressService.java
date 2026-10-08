@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.address;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +35,7 @@ public class AddressService {
         return !addressRepository.isCustomerActive(customerId);
     }
 
-    public AddressResponse.ApiResponse<List<AddressResponse.AddressData>> getAddresses(String customerId) {
+    public ApiResponse<List<AddressResponse.AddressData>> getAddresses(String customerId) {
         if (isAccountLockedOrNotCustomer(customerId)) {
             throw new AddressException(403, "Tài khoản bị khóa hoặc không phải role khách hàng");
         }
@@ -43,10 +45,10 @@ public class AddressService {
                 .map(this::mapToAddressData)
                 .collect(Collectors.toList());
 
-        return new AddressResponse.ApiResponse<>(200, "Lấy danh sách địa chỉ thành công", items);
+        return new ApiResponse<>(200, "Lấy danh sách địa chỉ thành công", items);
     }
 
-    public AddressResponse.ApiResponse<AddressResponse.AddressData> createAddress(
+    public ApiResponse<AddressResponse.AddressData> createAddress(
             String customerId, AddressRequest.CreateAddressRequest request) {
 
         if (isAccountLockedOrNotCustomer(customerId)) {
@@ -83,7 +85,7 @@ public class AddressService {
 
         try {
             Address created = addressRepository.insertAddress(address, isDefault && !isFirst);
-            return new AddressResponse.ApiResponse<>(201, "Thêm địa chỉ thành công", mapToAddressData(created));
+            return new ApiResponse<>(201, "Thêm địa chỉ thành công", mapToAddressData(created));
         } catch (Exception e) {
             if (e.getMessage() != null && e.getMessage().contains("tối đa 5 địa chỉ")) {
                 throw new AddressException(400, "Bạn chỉ được lưu tối đa 5 địa chỉ nhận hàng. Vui lòng xóa bớt địa chỉ cũ để thêm mới.");
@@ -92,7 +94,7 @@ public class AddressService {
         }
     }
 
-    public AddressResponse.ApiResponse<AddressResponse.AddressData> updateAddress(
+    public ApiResponse<AddressResponse.AddressData> updateAddress(
             String customerId, Long addressId, AddressRequest.UpdateAddressRequest request) {
 
         if (addressId == null) {
@@ -134,10 +136,10 @@ public class AddressService {
                 isDefault
         );
 
-        return new AddressResponse.ApiResponse<>(200, "Cập nhật địa chỉ thành công", mapToAddressData(updated));
+        return new ApiResponse<>(200, "Cập nhật địa chỉ thành công", mapToAddressData(updated));
     }
 
-    public AddressResponse.ApiResponse<AddressResponse.DefaultAddressData> setDefaultAddress(
+    public ApiResponse<AddressResponse.DefaultAddressData> setDefaultAddress(
             String customerId, Long addressId) {
 
         if (addressId == null) {
@@ -160,11 +162,11 @@ public class AddressService {
 
         addressRepository.setDefaultAddress(addressId, customerId);
 
-        return new AddressResponse.ApiResponse<>(200, "Đặt địa chỉ mặc định thành công",
+        return new ApiResponse<>(200, "Đặt địa chỉ mặc định thành công",
                 new AddressResponse.DefaultAddressData(addressId, true));
     }
 
-    public AddressResponse.ApiResponse<Void> deleteAddress(String customerId, Long addressId) {
+    public ApiResponse<Void> deleteAddress(String customerId, Long addressId) {
         if (addressId == null) {
             throw new AddressException(400, "Mã địa chỉ không hợp lệ");
         }
@@ -186,7 +188,7 @@ public class AddressService {
         boolean wasDefault = Boolean.TRUE.equals(existing.getLaMacDinh());
         addressRepository.deleteAddress(addressId, customerId, wasDefault);
 
-        return new AddressResponse.ApiResponse<>(200, "Xóa địa chỉ nhận hàng thành công");
+        return new ApiResponse<>(200, "Xóa địa chỉ nhận hàng thành công");
     }
 
     private AddressResponse.AddressData mapToAddressData(Address a) {

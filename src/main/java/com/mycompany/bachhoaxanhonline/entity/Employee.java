@@ -1,6 +1,5 @@
-package com.mycompany.bachhoaxanhonline.module.employee;
+package com.mycompany.bachhoaxanhonline.entity;
 
-import com.mycompany.bachhoaxanhonline.module.auth.Auth;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,6 +52,16 @@ public class Employee implements Serializable {
     private Boolean deleted = false;
 
     public Employee() {
+        this.chucVu = EmployeeRole.STAFF;
+        this.ngayVaoLam = LocalDate.now();
+        this.deleted = false;
+    }
+
+    public Employee(Auth user) {
+        this.user = user;
+        if (user != null) {
+            this.maNhanVien = user.getMaNguoiDung();
+        }
         this.chucVu = EmployeeRole.STAFF;
         this.ngayVaoLam = LocalDate.now();
         this.deleted = false;

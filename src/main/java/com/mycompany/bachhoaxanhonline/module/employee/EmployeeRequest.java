@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.employee;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

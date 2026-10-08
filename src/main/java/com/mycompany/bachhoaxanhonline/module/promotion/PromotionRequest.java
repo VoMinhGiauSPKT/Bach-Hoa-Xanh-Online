@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.promotion;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 public class PromotionRequest {

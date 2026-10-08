@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.auth;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

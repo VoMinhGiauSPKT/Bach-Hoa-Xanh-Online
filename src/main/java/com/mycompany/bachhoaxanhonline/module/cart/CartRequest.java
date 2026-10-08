@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.cart;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 public class CartRequest {
 
     public static class AddItemRequest {

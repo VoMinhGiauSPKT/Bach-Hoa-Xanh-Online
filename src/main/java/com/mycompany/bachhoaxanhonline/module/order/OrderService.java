@@ -1,10 +1,9 @@
 package com.mycompany.bachhoaxanhonline.module.order;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
-import com.mycompany.bachhoaxanhonline.module.cart.Cart;
-import com.mycompany.bachhoaxanhonline.module.cart.LineItem;
 import com.mycompany.bachhoaxanhonline.module.cart.CartResponse.LineItemData;
-import com.mycompany.bachhoaxanhonline.module.product.Product;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.math.BigDecimal;
@@ -26,7 +25,7 @@ public class OrderService {
         public int getStatusCode() { return statusCode; }
     }
 
-    public OrderResponse.ApiResponse<OrderResponse.OrderDetailData> createOrder(String customerId, OrderRequest.CreateOrderRequest request) {
+    public ApiResponse<OrderResponse.OrderDetailData> createOrder(String customerId, OrderRequest.CreateOrderRequest request) {
         if (request.getTenNguoiNhan() == null || request.getSoDienThoaiNhan() == null || request.getDiaChiGiaoHang() == null) {
             throw new OrderException(400, "Thiếu thông tin địa chỉ giao hàng");
         }
@@ -112,7 +111,7 @@ public class OrderService {
         return getOrderDetail(order.getMaDonHang(), customerId, "CUSTOMER");
     }
 
-    public OrderResponse.ApiResponse<OrderResponse.OrderDetailData> confirmCod(String orderId) {
+    public ApiResponse<OrderResponse.OrderDetailData> confirmCod(String orderId) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
@@ -151,7 +150,7 @@ public class OrderService {
         return getOrderDetail(orderId, null, "STAFF");
     }
 
-    public OrderResponse.ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit) {
+    public ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit) {
         List<Order> orders;
         if ("CUSTOMER".equalsIgnoreCase(role)) {
             orders = orderRepository.findByCustomerId(customerId, page, limit);
@@ -174,10 +173,10 @@ public class OrderService {
         }
         data.setItems(summaries);
 
-        return new OrderResponse.ApiResponse<>(200, "Lấy danh sách đơn hàng thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách đơn hàng thành công", data);
     }
 
-    public OrderResponse.ApiResponse<OrderResponse.OrderDetailData> getOrderDetail(String orderId, String customerId, String role) {
+    public ApiResponse<OrderResponse.OrderDetailData> getOrderDetail(String orderId, String customerId, String role) {
         EntityManager em = JpaUtil.getEntityManager();
         try {
             Order order = em.createQuery("SELECT o FROM Order o LEFT JOIN FETCH o.lineItems WHERE o.maDonHang = :orderId", Order.class)
@@ -220,7 +219,7 @@ public class OrderService {
             }
             data.setItems(itemDataList);
 
-            return new OrderResponse.ApiResponse<>(200, "Lấy chi tiết đơn hàng thành công", data);
+            return new ApiResponse<>(200, "Lấy chi tiết đơn hàng thành công", data);
         } finally {
             em.close();
         }

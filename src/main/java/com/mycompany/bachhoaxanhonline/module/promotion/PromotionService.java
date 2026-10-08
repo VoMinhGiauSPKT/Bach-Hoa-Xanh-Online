@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.promotion;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -48,19 +50,19 @@ public class PromotionService {
     /**
      * 1. Lấy danh sách khuyến mãi khả dụng (GET /promotion/available)
      */
-    public PromotionResponse.ApiResponse<List<PromotionResponse.AvailablePromotionItem>> getAvailablePromotions(Double totalAmount) {
+    public ApiResponse<List<PromotionResponse.AvailablePromotionItem>> getAvailablePromotions(Double totalAmount) {
         if (totalAmount == null || totalAmount < 0) {
             throw new PromotionException(400, "totalAmount không hợp lệ.");
         }
 
         List<PromotionResponse.AvailablePromotionItem> list = promotionRepository.getAvailablePromotions(totalAmount);
-        return new PromotionResponse.ApiResponse<>(200, "Lấy danh sách khuyến mãi thành công", list);
+        return new ApiResponse<>(200, "Lấy danh sách khuyến mãi thành công", list);
     }
 
     /**
      * 2. Admin xem toàn bộ danh sách khuyến mãi (GET /promotion)
      */
-    public PromotionResponse.ApiResponse<PromotionResponse.AdminPromotionsData> getAdminPromotions(
+    public ApiResponse<PromotionResponse.AdminPromotionsData> getAdminPromotions(
             String keyword, String type, Integer page, Integer limit) {
 
         int currentPage = (page != null && page >= 1) ? page : 1;
@@ -75,13 +77,13 @@ public class PromotionService {
         }
 
         PromotionResponse.AdminPromotionsData data = promotionRepository.getAdminPromotions(keyword, type, currentPage, currentLimit);
-        return new PromotionResponse.ApiResponse<>(200, "Lấy danh sách khuyến mãi quản trị thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách khuyến mãi quản trị thành công", data);
     }
 
     /**
      * 3. Admin tạo mới khuyến mãi (POST /promotion)
      */
-    public PromotionResponse.ApiResponse<PromotionResponse.CreatePromotionData> createPromotion(PromotionRequest.CreatePromotionRequest req) {
+    public ApiResponse<PromotionResponse.CreatePromotionData> createPromotion(PromotionRequest.CreatePromotionRequest req) {
         if (req == null) {
             throw new PromotionException(400, "Dữ liệu không hợp lệ.");
         }
@@ -150,13 +152,13 @@ public class PromotionService {
         PromotionResponse.CreatePromotionData data = new PromotionResponse.CreatePromotionData(
                 code, req.getPromotionName(), type, req.getDiscountValue(), req.getMaxDiscount(), usage
         );
-        return new PromotionResponse.ApiResponse<>(201, "Tạo chương trình khuyến mãi thành công", data);
+        return new ApiResponse<>(201, "Tạo chương trình khuyến mãi thành công", data);
     }
 
     /**
      * 4. Admin cập nhật khuyến mãi (PUT /promotion/:code)
      */
-    public PromotionResponse.ApiResponse<PromotionResponse.UpdatePromotionData> updatePromotion(
+    public ApiResponse<PromotionResponse.UpdatePromotionData> updatePromotion(
             String code, PromotionRequest.UpdatePromotionRequest req) {
 
         if (code == null || code.trim().isEmpty()) {
@@ -193,13 +195,13 @@ public class PromotionService {
         PromotionResponse.UpdatePromotionData data = new PromotionResponse.UpdatePromotionData(
                 code, finalName, finalUsage, finalEndDate
         );
-        return new PromotionResponse.ApiResponse<>(200, "Cập nhật khuyến mãi thành công", data);
+        return new ApiResponse<>(200, "Cập nhật khuyến mãi thành công", data);
     }
 
     /**
      * 5. Admin xóa khuyến mãi (DELETE /promotion/:code)
      */
-    public PromotionResponse.ApiResponse<Void> deletePromotion(String code) {
+    public ApiResponse<Void> deletePromotion(String code) {
         if (code == null || code.trim().isEmpty()) {
             throw new PromotionException(400, "Mã khuyến mãi không hợp lệ.");
         }
@@ -210,6 +212,6 @@ public class PromotionService {
         }
 
         promotionRepository.deletePromotion(code);
-        return new PromotionResponse.ApiResponse<>(200, "Xóa mã khuyến mãi thành công");
+        return new ApiResponse<>(200, "Xóa mã khuyến mãi thành công");
     }
 }

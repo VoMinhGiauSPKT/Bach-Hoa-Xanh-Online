@@ -1,6 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.employee;
 
-import com.mycompany.bachhoaxanhonline.module.auth.Auth;
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class EmployeeService {
         }
     }
 
-    public EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> createEmployee(
+    public ApiResponse<EmployeeResponse.EmployeeData> createEmployee(
             EmployeeRequest.CreateEmployeeRequest request) {
         if (request == null) {
             throw new EmployeeException(400, "Thiếu thông tin bắt buộc");
@@ -80,10 +81,10 @@ public class EmployeeService {
                 position,
                 true);
 
-        return new EmployeeResponse.ApiResponse<>(201, "Tạo nhân viên thành công", data);
+        return new ApiResponse<>(201, "Tạo nhân viên thành công", data);
     }
 
-    public EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeListData> getEmployees(
+    public ApiResponse<EmployeeResponse.EmployeeListData> getEmployees(
             int page, int limit, String keyword, String position, Boolean status) {
         int validPage = page > 0 ? page : 1;
         int validLimit = (limit > 0 && limit <= 100) ? limit : 10;
@@ -112,10 +113,10 @@ public class EmployeeService {
 
         EmployeeResponse.EmployeeListData data = new EmployeeResponse.EmployeeListData(total, validPage, validLimit,
                 items);
-        return new EmployeeResponse.ApiResponse<>(200, "Lấy danh sách nhân viên thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách nhân viên thành công", data);
     }
 
-    public EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeDetailData> getEmployeeById(String employeeId) {
+    public ApiResponse<EmployeeResponse.EmployeeDetailData> getEmployeeById(String employeeId) {
         if (employeeId == null || employeeId.trim().isEmpty()) {
             throw new EmployeeException(400, "Thiếu ID nhân viên");
         }
@@ -138,10 +139,10 @@ public class EmployeeService {
                 emp.getNgayVaoLam(),
                 emp.isActive());
 
-        return new EmployeeResponse.ApiResponse<>(200, "Lấy thông tin nhân viên thành công", data);
+        return new ApiResponse<>(200, "Lấy thông tin nhân viên thành công", data);
     }
 
-    public EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> updateEmployee(
+    public ApiResponse<EmployeeResponse.EmployeeData> updateEmployee(
             String employeeId, EmployeeRequest.UpdateEmployeeRequest request) {
         if (employeeId == null || employeeId.trim().isEmpty()) {
             throw new EmployeeException(400, "Thiếu ID nhân viên");
@@ -206,10 +207,10 @@ public class EmployeeService {
                 updated.getChucVu() != null ? updated.getChucVu().name() : "STAFF",
                 updated.isActive());
 
-        return new EmployeeResponse.ApiResponse<>(200, "Cập nhật tài khoản nhân viên thành công", data);
+        return new ApiResponse<>(200, "Cập nhật tài khoản nhân viên thành công", data);
     }
 
-    public EmployeeResponse.ApiResponse<EmployeeResponse.UpdateStatusData> updateStatus(
+    public ApiResponse<EmployeeResponse.UpdateStatusData> updateStatus(
             String employeeId, EmployeeRequest.UpdateStatusRequest request, String currentAdminId) {
         if (employeeId == null || employeeId.trim().isEmpty()) {
             throw new EmployeeException(400, "Thiếu ID nhân viên");
@@ -233,6 +234,6 @@ public class EmployeeService {
         employeeRepository.updateStatus(targetId, request.getStatus());
 
         EmployeeResponse.UpdateStatusData data = new EmployeeResponse.UpdateStatusData(targetId, request.getStatus());
-        return new EmployeeResponse.ApiResponse<>(200, "Cập nhật trạng thái nhân viên thành công", data);
+        return new ApiResponse<>(200, "Cập nhật trạng thái nhân viên thành công", data);
     }
 }

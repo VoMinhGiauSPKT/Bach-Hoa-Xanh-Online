@@ -1,6 +1,5 @@
-package com.mycompany.bachhoaxanhonline.module.order;
+package com.mycompany.bachhoaxanhonline.entity;
 
-import com.mycompany.bachhoaxanhonline.module.cart.LineItem;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -61,8 +60,6 @@ public class Order implements Serializable {
 
     public Order() {
     }
-
-    // Getters and Setters
 
     public String getMaDonHang() {
         return maDonHang;

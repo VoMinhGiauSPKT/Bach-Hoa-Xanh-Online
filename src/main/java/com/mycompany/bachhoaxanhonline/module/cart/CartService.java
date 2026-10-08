@@ -1,6 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.cart;
 
-import com.mycompany.bachhoaxanhonline.module.product.Product;
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.product.ProductRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class CartService {
         public int getStatusCode() { return statusCode; }
     }
 
-    public CartResponse.ApiResponse<CartResponse.CartDetailData> getCart(String customerId) {
+    public ApiResponse<CartResponse.CartDetailData> getCart(String customerId) {
         Cart cart = cartRepository.findByCustomerId(customerId);
         if (cart == null) {
             throw new CartException(404, "Không tìm thấy giỏ hàng của khách hàng trong hệ thống");
@@ -59,10 +60,10 @@ public class CartService {
         data.setItems(itemDataList);
         data.setTotalItems(totalItems);
 
-        return new CartResponse.ApiResponse<>(200, "Lấy thông tin giỏ hàng thành công", data);
+        return new ApiResponse<>(200, "Lấy thông tin giỏ hàng thành công", data);
     }
 
-    public CartResponse.ApiResponse<CartResponse.AddItemData> addItemToCart(String customerId, CartRequest.AddItemRequest request) {
+    public ApiResponse<CartResponse.AddItemData> addItemToCart(String customerId, CartRequest.AddItemRequest request) {
         if (request.getProductId() == null || request.getQuantity() == null || request.getQuantity() <= 0) {
             throw new CartException(400, "Thiếu thông tin bắt buộc hoặc số lượng <= 0");
         }
@@ -117,10 +118,10 @@ public class CartService {
         data.setItemTotal(existingItem.getThanhTien());
         data.setTotalCartAmount(cart.getTongTien());
 
-        return new CartResponse.ApiResponse<>(200, "Thêm sản phẩm vào giỏ hàng thành công", data);
+        return new ApiResponse<>(200, "Thêm sản phẩm vào giỏ hàng thành công", data);
     }
 
-    public CartResponse.ApiResponse<CartResponse.UpdateItemData> updateItemQuantity(String customerId, Long lineItemId, CartRequest.UpdateItemRequest request) {
+    public ApiResponse<CartResponse.UpdateItemData> updateItemQuantity(String customerId, Long lineItemId, CartRequest.UpdateItemRequest request) {
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
             throw new CartException(400, "Số lượng phải lớn hơn 0");
         }
@@ -165,10 +166,10 @@ public class CartService {
         data.setItemTotal(targetItem.getThanhTien());
         data.setTotalCartAmount(cart.getTongTien());
 
-        return new CartResponse.ApiResponse<>(200, "Cập nhật số lượng thành công", data);
+        return new ApiResponse<>(200, "Cập nhật số lượng thành công", data);
     }
 
-    public CartResponse.ApiResponse<CartResponse.CartDetailData> removeItem(String customerId, Long lineItemId) {
+    public ApiResponse<CartResponse.CartDetailData> removeItem(String customerId, Long lineItemId) {
         Cart cart = cartRepository.findByCustomerId(customerId);
         if (cart == null) {
             throw new CartException(404, "Không tìm thấy giỏ hàng");
@@ -184,10 +185,10 @@ public class CartService {
 
         CartResponse.CartDetailData data = new CartResponse.CartDetailData();
         data.setTotalAmount(cart.getTongTien());
-        return new CartResponse.ApiResponse<>(200, "Xóa sản phẩm khỏi giỏ hàng thành công", data);
+        return new ApiResponse<>(200, "Xóa sản phẩm khỏi giỏ hàng thành công", data);
     }
 
-    public CartResponse.ApiResponse<CartResponse.CartDetailData> clearCart(String customerId) {
+    public ApiResponse<CartResponse.CartDetailData> clearCart(String customerId) {
         Cart cart = cartRepository.findByCustomerId(customerId);
         if (cart == null) {
             throw new CartException(404, "Không tìm thấy giỏ hàng");
@@ -200,7 +201,7 @@ public class CartService {
         CartResponse.CartDetailData data = new CartResponse.CartDetailData();
         data.setTotalAmount(BigDecimal.ZERO);
         data.setTotalItems(0);
-        return new CartResponse.ApiResponse<>(200, "Đã làm trống giỏ hàng thành công", data);
+        return new ApiResponse<>(200, "Đã làm trống giỏ hàng thành công", data);
     }
 
     private void recalculateCartTotal(Cart cart) {

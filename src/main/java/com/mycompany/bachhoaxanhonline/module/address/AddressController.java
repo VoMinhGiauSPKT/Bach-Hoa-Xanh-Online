@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.address;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -41,20 +43,20 @@ public class AddressController extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo != null && !pathInfo.isEmpty() && !pathInfo.equals("/")) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + pathInfo));
+                    new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + pathInfo));
             return;
         }
 
         try {
-            AddressResponse.ApiResponse<?> response = addressService.getAddresses(customerId);
+            ApiResponse<?> response = addressService.getAddresses(customerId);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (AddressService.AddressException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AddressResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -70,25 +72,25 @@ public class AddressController extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo != null && !pathInfo.isEmpty() && !pathInfo.equals("/")) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + pathInfo));
+                    new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + pathInfo));
             return;
         }
 
         try {
             AddressRequest.CreateAddressRequest request = JsonUtil.fromJson(
                     req.getReader(), AddressRequest.CreateAddressRequest.class);
-            AddressResponse.ApiResponse<?> response = addressService.createAddress(customerId, request);
+            ApiResponse<?> response = addressService.createAddress(customerId, request);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
         } catch (AddressService.AddressException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AddressResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu gửi lên không đúng định dạng JSON"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu gửi lên không đúng định dạng JSON"));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -105,25 +107,25 @@ public class AddressController extends HttpServlet {
         Long addressId = parseSingleId(pathInfo);
         if (addressId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Mã địa chỉ không hợp lệ trên đường dẫn"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Mã địa chỉ không hợp lệ trên đường dẫn"));
             return;
         }
 
         try {
             AddressRequest.UpdateAddressRequest request = JsonUtil.fromJson(
                     req.getReader(), AddressRequest.UpdateAddressRequest.class);
-            AddressResponse.ApiResponse<?> response = addressService.updateAddress(customerId, addressId, request);
+            ApiResponse<?> response = addressService.updateAddress(customerId, addressId, request);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (AddressService.AddressException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AddressResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu gửi lên không đúng định dạng JSON"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu gửi lên không đúng định dạng JSON"));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -139,20 +141,20 @@ public class AddressController extends HttpServlet {
         Long addressId = parseDefaultActionId(pathInfo);
         if (addressId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + (pathInfo != null ? pathInfo : "")));
+                    new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /address" + (pathInfo != null ? pathInfo : "")));
             return;
         }
 
         try {
-            AddressResponse.ApiResponse<?> response = addressService.setDefaultAddress(customerId, addressId);
+            ApiResponse<?> response = addressService.setDefaultAddress(customerId, addressId);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (AddressService.AddressException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AddressResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -169,20 +171,20 @@ public class AddressController extends HttpServlet {
         Long addressId = parseSingleId(pathInfo);
         if (addressId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Mã địa chỉ không hợp lệ trên đường dẫn"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Mã địa chỉ không hợp lệ trên đường dẫn"));
             return;
         }
 
         try {
-            AddressResponse.ApiResponse<?> response = addressService.deleteAddress(customerId, addressId);
+            ApiResponse<?> response = addressService.deleteAddress(customerId, addressId);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
         } catch (AddressService.AddressException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AddressResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -190,14 +192,14 @@ public class AddressController extends HttpServlet {
         String authHeader = req.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return null;
         }
 
         String token = authHeader.substring(7).trim();
         if (!JwtUtil.validateToken(token)) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return null;
         }
 
@@ -208,19 +210,19 @@ public class AddressController extends HttpServlet {
             role = JwtUtil.getRoleFromToken(token);
         } catch (Exception e) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return null;
         }
 
         if (userId == null || role == null || !"CUSTOMER".equalsIgnoreCase(role)) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản bị khóa hoặc không phải role khách hàng"));
+                    new ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản bị khóa hoặc không phải role khách hàng"));
             return null;
         }
 
         if (addressService.isAccountLockedOrNotCustomer(userId)) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN,
-                    new AddressResponse.ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản bị khóa hoặc không phải role khách hàng"));
+                    new ApiResponse<>(HttpServletResponse.SC_FORBIDDEN, "Tài khoản bị khóa hoặc không phải role khách hàng"));
             return null;
         }
 

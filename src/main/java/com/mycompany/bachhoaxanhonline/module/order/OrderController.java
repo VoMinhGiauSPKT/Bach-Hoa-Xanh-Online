@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.order;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -43,7 +45,7 @@ public class OrderController extends HttpServlet {
                     if (req.getParameter("limit") != null) limit = Integer.parseInt(req.getParameter("limit"));
                 } catch (NumberFormatException ignored) {}
 
-                OrderResponse.ApiResponse<OrderResponse.OrderListData> response = orderService.getOrders(userId, role, page, limit);
+                ApiResponse<OrderResponse.OrderListData> response = orderService.getOrders(userId, role, page, limit);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             } else {
                 String orderId = extractIdFromPath(pathInfo);
@@ -52,7 +54,7 @@ public class OrderController extends HttpServlet {
                     return;
                 }
                 
-                OrderResponse.ApiResponse<OrderResponse.OrderDetailData> response = orderService.getOrderDetail(orderId, userId, role);
+                ApiResponse<OrderResponse.OrderDetailData> response = orderService.getOrderDetail(orderId, userId, role);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             }
         } catch (OrderService.OrderException e) {
@@ -85,7 +87,7 @@ public class OrderController extends HttpServlet {
         if (pathInfo == null || pathInfo.equals("/")) {
             try {
                 OrderRequest.CreateOrderRequest request = JsonUtil.fromJson(req.getReader(), OrderRequest.CreateOrderRequest.class);
-                OrderResponse.ApiResponse<OrderResponse.OrderDetailData> response = orderService.createOrder(userId, request);
+                ApiResponse<OrderResponse.OrderDetailData> response = orderService.createOrder(userId, request);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
             } catch (OrderService.OrderException e) {
                 sendError(resp, e.getStatusCode(), e.getMessage());
@@ -128,7 +130,7 @@ public class OrderController extends HttpServlet {
         if (pathInfo != null && pathInfo.endsWith("/confirm-cod")) {
             String orderId = pathInfo.replace("/confirm-cod", "").replace("/", "");
             try {
-                OrderResponse.ApiResponse<OrderResponse.OrderDetailData> response = orderService.confirmCod(orderId);
+                ApiResponse<OrderResponse.OrderDetailData> response = orderService.confirmCod(orderId);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             } catch (OrderService.OrderException e) {
                 sendError(resp, e.getStatusCode(), e.getMessage());
@@ -158,7 +160,7 @@ public class OrderController extends HttpServlet {
     }
 
     private void sendError(HttpServletResponse resp, int status, String message) throws IOException {
-        JsonUtil.sendJsonResponse(resp, status, new OrderResponse.ApiResponse<>(status, message));
+        JsonUtil.sendJsonResponse(resp, status, new ApiResponse<>(status, message));
     }
 
     private void setupCorsHeaders(HttpServletRequest req, HttpServletResponse resp) {

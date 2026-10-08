@@ -1,6 +1,5 @@
-package com.mycompany.bachhoaxanhonline.module.cart;
+package com.mycompany.bachhoaxanhonline.entity;
 
-import com.mycompany.bachhoaxanhonline.module.product.Product;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;

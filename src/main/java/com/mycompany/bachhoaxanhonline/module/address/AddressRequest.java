@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.address;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AddressRequest {

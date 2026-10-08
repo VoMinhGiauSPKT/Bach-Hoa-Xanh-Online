@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.auth;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
@@ -19,15 +21,15 @@ public class AuthService {
     }
 
     public static class LoginResult {
-        private final AuthResponse.ApiResponse<AuthResponse.LoginData> response;
+        private final ApiResponse<AuthResponse.LoginData> response;
         private final String refreshToken;
 
-        public LoginResult(AuthResponse.ApiResponse<AuthResponse.LoginData> response, String refreshToken) {
+        public LoginResult(ApiResponse<AuthResponse.LoginData> response, String refreshToken) {
             this.response = response;
             this.refreshToken = refreshToken;
         }
 
-        public AuthResponse.ApiResponse<AuthResponse.LoginData> getResponse() {
+        public ApiResponse<AuthResponse.LoginData> getResponse() {
             return response;
         }
 
@@ -49,7 +51,7 @@ public class AuthService {
         }
     }
 
-    public AuthResponse.ApiResponse<AuthResponse.RegisterData> registerCustomer(AuthRequest.RegisterRequest request) {
+    public ApiResponse<AuthResponse.RegisterData> registerCustomer(AuthRequest.RegisterRequest request) {
         // 1. Kiểm tra thông tin bắt buộc
         String violation = ValidationUtil.getFirstViolationMessage(request);
         if (violation != null) {
@@ -94,7 +96,7 @@ public class AuthService {
                 request.getPhoneNumber()
         );
 
-        return new AuthResponse.ApiResponse<>(201, "Đăng ký thành công", data);
+        return new ApiResponse<>(201, "Đăng ký thành công", data);
     }
 
     public LoginResult login(AuthRequest.LoginRequest request) {
@@ -149,13 +151,13 @@ public class AuthService {
         String refreshToken = JwtUtil.generateRefreshToken(auth.getMaNguoiDung());
         authRepository.updateRefreshToken(auth.getMaNguoiDung(), refreshToken);
 
-        AuthResponse.ApiResponse<AuthResponse.LoginData> response = new AuthResponse.ApiResponse<>(
+        ApiResponse<AuthResponse.LoginData> response = new ApiResponse<>(
                 200, "Đăng nhập thành công", loginData);
 
         return new LoginResult(response, refreshToken);
     }
 
-    public AuthResponse.ApiResponse<AuthResponse.TokenData> refreshToken(String refreshToken) {
+    public ApiResponse<AuthResponse.TokenData> refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.trim().isEmpty()) {
             throw new AuthException(401, "Không tìm thấy token trong cookie");
         }
@@ -185,7 +187,7 @@ public class AuthService {
         String role = (position != null) ? position : "CUSTOMER";
 
         String newAccessToken = JwtUtil.generateAccessToken(auth.getMaNguoiDung(), auth.getTenND(), role);
-        return new AuthResponse.ApiResponse<>(200, new AuthResponse.TokenData(newAccessToken));
+        return new ApiResponse<>(200, new AuthResponse.TokenData(newAccessToken));
     }
 
     public void logout(String refreshToken) {

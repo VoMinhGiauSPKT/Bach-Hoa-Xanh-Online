@@ -1,6 +1,5 @@
-package com.mycompany.bachhoaxanhonline.module.user;
+package com.mycompany.bachhoaxanhonline.entity;
 
-import com.mycompany.bachhoaxanhonline.module.auth.Auth;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

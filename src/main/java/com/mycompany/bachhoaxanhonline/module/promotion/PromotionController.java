@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.promotion;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -47,7 +49,7 @@ public class PromotionController extends HttpServlet {
                 String totalAmountStr = req.getParameter("totalAmount");
                 if (totalAmountStr == null || totalAmountStr.trim().isEmpty()) {
                     JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                            new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "totalAmount không hợp lệ."));
+                            new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "totalAmount không hợp lệ."));
                     return;
                 }
                 double totalAmount;
@@ -55,11 +57,11 @@ public class PromotionController extends HttpServlet {
                     totalAmount = Double.parseDouble(totalAmountStr.trim());
                 } catch (NumberFormatException e) {
                     JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                            new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "totalAmount không hợp lệ."));
+                            new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "totalAmount không hợp lệ."));
                     return;
                 }
 
-                PromotionResponse.ApiResponse<?> result = promotionService.getAvailablePromotions(totalAmount);
+                ApiResponse<?> result = promotionService.getAvailablePromotions(totalAmount);
                 JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
             } else if (pathInfo.isEmpty() || "/".equals(pathInfo)) {
                 // 2. GET /promotion (Admin)
@@ -79,19 +81,19 @@ public class PromotionController extends HttpServlet {
                     } catch (NumberFormatException ignored) {}
                 }
 
-                PromotionResponse.ApiResponse<?> result = promotionService.getAdminPromotions(keyword, type, page, limit);
+                ApiResponse<?> result = promotionService.getAdminPromotions(keyword, type, page, limit);
                 JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /promotion" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /promotion" + pathInfo));
             }
         } catch (PromotionService.PromotionException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new PromotionResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -109,19 +111,19 @@ public class PromotionController extends HttpServlet {
                 PromotionRequest.CreatePromotionRequest reqBody =
                         JsonUtil.fromJson(req.getReader(), PromotionRequest.CreatePromotionRequest.class);
 
-                PromotionResponse.ApiResponse<?> result = promotionService.createPromotion(reqBody);
+                ApiResponse<?> result = promotionService.createPromotion(reqBody);
                 JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /promotion" + pathInfo));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /promotion" + pathInfo));
             }
         } catch (PromotionService.PromotionException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new PromotionResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -131,7 +133,7 @@ public class PromotionController extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã khuyến mãi trên URL"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã khuyến mãi trên URL"));
             return;
         }
 
@@ -146,15 +148,15 @@ public class PromotionController extends HttpServlet {
                     JsonUtil.fromJson(req.getReader(), PromotionRequest.UpdatePromotionRequest.class);
 
 
-            PromotionResponse.ApiResponse<?> result = promotionService.updatePromotion(code, reqBody);
+            ApiResponse<?> result = promotionService.updatePromotion(code, reqBody);
             JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
         } catch (PromotionService.PromotionException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new PromotionResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
@@ -164,7 +166,7 @@ public class PromotionController extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo)) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã khuyến mãi trên URL"));
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã khuyến mãi trên URL"));
             return;
         }
 
@@ -175,15 +177,15 @@ public class PromotionController extends HttpServlet {
                 code = code.substring(0, code.indexOf("/"));
             }
 
-            PromotionResponse.ApiResponse<?> result = promotionService.deletePromotion(code);
+            ApiResponse<?> result = promotionService.deletePromotion(code);
             JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
         } catch (PromotionService.PromotionException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new PromotionResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new PromotionResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 }

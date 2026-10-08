@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.middleware;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

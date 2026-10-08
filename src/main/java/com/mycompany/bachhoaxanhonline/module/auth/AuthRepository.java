@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.auth;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;

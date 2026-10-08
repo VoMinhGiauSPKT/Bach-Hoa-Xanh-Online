@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.review;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +35,7 @@ public class ReviewService {
     /**
      * 1. GET /review/product/:productId (Công khai)
      */
-    public ReviewResponse.ApiResponse<ReviewResponse.ProductReviewsData> getProductReviews(
+    public ApiResponse<ReviewResponse.ProductReviewsData> getProductReviews(
             String productId, Integer rating, int page, int limit) {
 
         if (productId == null || productId.trim().isEmpty()) {
@@ -56,13 +58,13 @@ public class ReviewService {
         List<ReviewResponse.ProductReviewItem> reviews = reviewRepository.findProductReviews(productId, rating, limit, offset);
 
         ReviewResponse.ProductReviewsData data = new ReviewResponse.ProductReviewsData(summary, page, limit, reviews);
-        return new ReviewResponse.ApiResponse<>(200, "Lấy danh sách đánh giá thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách đánh giá thành công", data);
     }
 
     /**
      * 2. POST /review (Khách hàng)
      */
-    public ReviewResponse.ApiResponse<ReviewResponse.CreateReviewData> createReview(
+    public ApiResponse<ReviewResponse.CreateReviewData> createReview(
             String customerId, ReviewRequest.CreateReviewRequest request) {
 
         if (request == null) {
@@ -104,13 +106,13 @@ public class ReviewService {
                 ReviewRepository.formatIso8601(now)
         );
 
-        return new ReviewResponse.ApiResponse<>(201, "Đánh giá sản phẩm thành công", data);
+        return new ApiResponse<>(201, "Đánh giá sản phẩm thành công", data);
     }
 
     /**
      * 3. PUT /review/:id (Khách hàng chính chủ)
      */
-    public ReviewResponse.ApiResponse<ReviewResponse.UpdateReviewData> updateReview(
+    public ApiResponse<ReviewResponse.UpdateReviewData> updateReview(
             String customerId, Long reviewId, ReviewRequest.UpdateReviewRequest request) {
 
         if (request == null) {
@@ -147,13 +149,13 @@ public class ReviewService {
                 ReviewRepository.formatIso8601(updatedAt)
         );
 
-        return new ReviewResponse.ApiResponse<>(200, "Cập nhật đánh giá thành công", data);
+        return new ApiResponse<>(200, "Cập nhật đánh giá thành công", data);
     }
 
     /**
      * 4. DELETE /review/:id (Khách hàng chính chủ hoặc STAFF / ADMIN)
      */
-    public ReviewResponse.ApiResponse<Void> deleteReview(String userId, String userRole, Long reviewId) {
+    public ApiResponse<Void> deleteReview(String userId, String userRole, Long reviewId) {
         Optional<Review> optReview = reviewRepository.findById(reviewId);
         if (optReview.isEmpty() || Boolean.TRUE.equals(optReview.get().getDeleted())) {
             throw new ReviewException(404, "Không tìm thấy đánh giá cần xóa");
@@ -170,13 +172,13 @@ public class ReviewService {
         }
 
         reviewRepository.softDeleteReview(reviewId);
-        return new ReviewResponse.ApiResponse<>(200, "Xóa đánh giá thành công");
+        return new ApiResponse<>(200, "Xóa đánh giá thành công");
     }
 
     /**
      * 5. GET /review/me (Khách hàng xem các bài đánh giá của chính mình)
      */
-    public ReviewResponse.ApiResponse<ReviewResponse.MyReviewsData> getMyReviews(
+    public ApiResponse<ReviewResponse.MyReviewsData> getMyReviews(
             String customerId, Integer rating, int page, int limit) {
 
         if (rating != null && (rating < 1 || rating > 5)) {
@@ -191,13 +193,13 @@ public class ReviewService {
         List<ReviewResponse.MyReviewItem> reviews = reviewRepository.findCustomerReviews(customerId, rating, limit, offset);
 
         ReviewResponse.MyReviewsData data = new ReviewResponse.MyReviewsData(total, page, limit, reviews);
-        return new ReviewResponse.ApiResponse<>(200, "Lấy danh sách đánh giá của tôi thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách đánh giá của tôi thành công", data);
     }
 
     /**
      * 6. GET /review (Quản trị viên / Nhân viên xem toàn bộ đánh giá)
      */
-    public ReviewResponse.ApiResponse<ReviewResponse.AdminReviewsData> getAdminReviews(
+    public ApiResponse<ReviewResponse.AdminReviewsData> getAdminReviews(
             Boolean isDeleted, String productId, String customerId, Integer rating, String keyword, int page, int limit) {
 
         if (isDeleted == null) {
@@ -216,6 +218,6 @@ public class ReviewService {
         List<ReviewResponse.AdminReviewItem> reviews = reviewRepository.findAdminReviews(isDeleted, productId, customerId, rating, keyword, limit, offset);
 
         ReviewResponse.AdminReviewsData data = new ReviewResponse.AdminReviewsData(total, page, limit, reviews);
-        return new ReviewResponse.ApiResponse<>(200, "Lấy danh sách đánh giá quản trị thành công", data);
+        return new ApiResponse<>(200, "Lấy danh sách đánh giá quản trị thành công", data);
     }
 }

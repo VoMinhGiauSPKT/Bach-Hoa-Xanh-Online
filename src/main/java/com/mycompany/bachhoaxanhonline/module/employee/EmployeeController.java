@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.employee;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.middleware.SecurityContext;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import jakarta.servlet.ServletException;
@@ -38,18 +40,18 @@ public class EmployeeController extends HttpServlet {
             String id = extractIdFromPath(req.getPathInfo());
             if (id != null) {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không hợp lệ"));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không hợp lệ"));
                 return;
             }
 
             handleCreateEmployee(req, resp);
         } catch (EmployeeService.EmployeeException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new EmployeeResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -67,11 +69,11 @@ public class EmployeeController extends HttpServlet {
             }
         } catch (EmployeeService.EmployeeException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new EmployeeResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -84,7 +86,7 @@ public class EmployeeController extends HttpServlet {
             String id = extractIdFromPath(req.getPathInfo());
             if (id == null) {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                        new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
+                        new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
                                 "Thiếu ID nhân viên trong đường dẫn"));
                 return;
             }
@@ -92,11 +94,11 @@ public class EmployeeController extends HttpServlet {
             handleUpdateEmployee(req, resp, id);
         } catch (EmployeeService.EmployeeException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new EmployeeResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -108,7 +110,7 @@ public class EmployeeController extends HttpServlet {
             String id = extractIdFromPath(req.getPathInfo());
             if (id == null) {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                        new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
+                        new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
                                 "Thiếu ID nhân viên trong đường dẫn"));
                 return;
             }
@@ -116,11 +118,11 @@ public class EmployeeController extends HttpServlet {
             handleUpdateStatus(req, resp, id);
         } catch (EmployeeService.EmployeeException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new EmployeeResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new EmployeeResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -128,7 +130,7 @@ public class EmployeeController extends HttpServlet {
     private void handleCreateEmployee(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         EmployeeRequest.CreateEmployeeRequest request = JsonUtil.fromJson(
                 req.getReader(), EmployeeRequest.CreateEmployeeRequest.class);
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> response = employeeService.createEmployee(request);
+        ApiResponse<EmployeeResponse.EmployeeData> response = employeeService.createEmployee(request);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
     }
 
@@ -139,13 +141,13 @@ public class EmployeeController extends HttpServlet {
         String position = req.getParameter("position");
         Boolean status = getBooleanParameter(req, "status");
 
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeListData> response = employeeService
+        ApiResponse<EmployeeResponse.EmployeeListData> response = employeeService
                 .getEmployees(page, limit, keyword, position, status);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 
     private void handleGetEmployeeById(HttpServletRequest req, HttpServletResponse resp, String id) throws IOException {
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeDetailData> response = employeeService
+        ApiResponse<EmployeeResponse.EmployeeDetailData> response = employeeService
                 .getEmployeeById(id);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
@@ -153,7 +155,7 @@ public class EmployeeController extends HttpServlet {
     private void handleUpdateEmployee(HttpServletRequest req, HttpServletResponse resp, String id) throws IOException {
         EmployeeRequest.UpdateEmployeeRequest request = JsonUtil.fromJson(
                 req.getReader(), EmployeeRequest.UpdateEmployeeRequest.class);
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> response = employeeService.updateEmployee(id,
+        ApiResponse<EmployeeResponse.EmployeeData> response = employeeService.updateEmployee(id,
                 request);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
@@ -162,7 +164,7 @@ public class EmployeeController extends HttpServlet {
         EmployeeRequest.UpdateStatusRequest request = JsonUtil.fromJson(
                 req.getReader(), EmployeeRequest.UpdateStatusRequest.class);
         String currentAdminId = SecurityContext.getUserId(req);
-        EmployeeResponse.ApiResponse<EmployeeResponse.UpdateStatusData> response = employeeService.updateStatus(id,
+        ApiResponse<EmployeeResponse.UpdateStatusData> response = employeeService.updateStatus(id,
                 request, currentAdminId);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }

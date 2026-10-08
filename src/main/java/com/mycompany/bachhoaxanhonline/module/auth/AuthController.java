@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.auth;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -45,22 +47,22 @@ public class AuthController extends HttpServlet {
                     break;
                 default:
                     JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                            new AuthResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /auth" + pathInfo));
+                            new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /auth" + pathInfo));
                     break;
             }
         } catch (AuthService.AuthException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new AuthResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new AuthResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         AuthRequest.RegisterRequest request = JsonUtil.fromJson(req.getReader(), AuthRequest.RegisterRequest.class);
-        AuthResponse.ApiResponse<AuthResponse.RegisterData> response = authService.registerCustomer(request);
+        ApiResponse<AuthResponse.RegisterData> response = authService.registerCustomer(request);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_CREATED, response);
     }
 
@@ -74,7 +76,7 @@ public class AuthController extends HttpServlet {
 
     private void handleRefresh(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String refreshToken = extractRefreshToken(req);
-        AuthResponse.ApiResponse<AuthResponse.TokenData> response = authService.refreshToken(refreshToken);
+        ApiResponse<AuthResponse.TokenData> response = authService.refreshToken(refreshToken);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 
@@ -84,7 +86,7 @@ public class AuthController extends HttpServlet {
         clearRefreshTokenCookie(resp);
 
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK,
-                new AuthResponse.ApiResponse<>(HttpServletResponse.SC_OK, "Đăng xuất thành công"));
+                new ApiResponse<>(HttpServletResponse.SC_OK, "Đăng xuất thành công"));
     }
 
     private void setRefreshTokenCookie(HttpServletResponse resp, String refreshToken) {

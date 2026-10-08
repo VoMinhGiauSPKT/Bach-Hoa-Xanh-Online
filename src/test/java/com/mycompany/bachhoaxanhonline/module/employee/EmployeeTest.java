@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.employee;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.auth.AuthRequest;
 import com.mycompany.bachhoaxanhonline.module.auth.AuthService;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
@@ -19,7 +21,7 @@ public class EmployeeTest {
         // 1. Tạo nhân viên STAFF thành công (201)
         EmployeeRequest.CreateEmployeeRequest req = new EmployeeRequest.CreateEmployeeRequest(
                 "Nguyen Van B", username, "Password123!", phone, "STAFF");
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> resp = service.createEmployee(req);
+        ApiResponse<EmployeeResponse.EmployeeData> resp = service.createEmployee(req);
 
         Assertions.assertEquals(201, resp.getStatus());
         Assertions.assertEquals("Tạo nhân viên thành công", resp.getMessage());
@@ -93,21 +95,21 @@ public class EmployeeTest {
                 "Nguyen Filter Test", username, "Password123!", phone, "STAFF"));
 
         // 1. Lấy danh sách nhân viên không kèm bộ lọc
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeListData> respAll = service.getEmployees(1, 10, null, null, null);
+        ApiResponse<EmployeeResponse.EmployeeListData> respAll = service.getEmployees(1, 10, null, null, null);
         Assertions.assertEquals(200, respAll.getStatus());
         Assertions.assertNotNull(respAll.getData());
         Assertions.assertTrue(respAll.getData().getTotal() > 0);
         Assertions.assertNotNull(respAll.getData().getEmployees());
 
         // 2. Tìm kiếm theo keyword
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeListData> respKw = service.getEmployees(1, 10, username, null, null);
+        ApiResponse<EmployeeResponse.EmployeeListData> respKw = service.getEmployees(1, 10, username, null, null);
         Assertions.assertEquals(200, respKw.getStatus());
         Assertions.assertNotNull(respKw.getData());
         Assertions.assertTrue(respKw.getData().getTotal() >= 1);
         Assertions.assertEquals(username, respKw.getData().getEmployees().get(0).getUsername());
 
         // 3. Lọc theo chức vụ
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeListData> respStaff = service.getEmployees(1, 10, null, "STAFF", true);
+        ApiResponse<EmployeeResponse.EmployeeListData> respStaff = service.getEmployees(1, 10, null, "STAFF", true);
         Assertions.assertEquals(200, respStaff.getStatus());
         Assertions.assertNotNull(respStaff.getData());
     }
@@ -120,12 +122,12 @@ public class EmployeeTest {
         String phone = "09" + String.format("%08d", rand);
 
         // Tạo nhân viên
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> created = service.createEmployee(
+        ApiResponse<EmployeeResponse.EmployeeData> created = service.createEmployee(
                 new EmployeeRequest.CreateEmployeeRequest("Le Detail", username, "Password123!", phone, "STAFF"));
         String empId = created.getData().getEmployeeId();
 
         // 1. Lấy thông tin chi tiết thành công (200)
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeDetailData> detail = service.getEmployeeById(empId);
+        ApiResponse<EmployeeResponse.EmployeeDetailData> detail = service.getEmployeeById(empId);
         Assertions.assertEquals(200, detail.getStatus());
         Assertions.assertNotNull(detail.getData());
         Assertions.assertEquals(empId, detail.getData().getEmployeeId());
@@ -149,7 +151,7 @@ public class EmployeeTest {
         String phoneOther = "08" + String.format("%08d", rand);
 
         // Tạo 2 nhân viên
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> emp1 = service.createEmployee(
+        ApiResponse<EmployeeResponse.EmployeeData> emp1 = service.createEmployee(
                 new EmployeeRequest.CreateEmployeeRequest("User One", username, "Password123!", phone, "STAFF"));
         service.createEmployee(
                 new EmployeeRequest.CreateEmployeeRequest("User Two", "other_" + rand, "Password123!", phoneOther, "STAFF"));
@@ -160,7 +162,7 @@ public class EmployeeTest {
         EmployeeRequest.UpdateEmployeeRequest updateReq = new EmployeeRequest.UpdateEmployeeRequest(
                 "User One Updated", "user1_" + rand + "@test.com", "09" + String.format("%08d", rand + 1),
                 LocalDate.of(1996, 4, 15), "ADMIN", "NewPassword123!");
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> updateResp = service.updateEmployee(empId1, updateReq);
+        ApiResponse<EmployeeResponse.EmployeeData> updateResp = service.updateEmployee(empId1, updateReq);
         Assertions.assertEquals(200, updateResp.getStatus());
         Assertions.assertEquals("User One Updated", updateResp.getData().getFullName());
         Assertions.assertEquals("ADMIN", updateResp.getData().getPosition());
@@ -185,7 +187,7 @@ public class EmployeeTest {
         String username = "status_" + rand;
         String phone = "09" + String.format("%08d", rand);
 
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeData> created = service.createEmployee(
+        ApiResponse<EmployeeResponse.EmployeeData> created = service.createEmployee(
                 new EmployeeRequest.CreateEmployeeRequest("Status User", username, "Password123!", phone, "STAFF"));
         String empId = created.getData().getEmployeeId();
 
@@ -196,17 +198,17 @@ public class EmployeeTest {
         Assertions.assertEquals(403, exForbidden.getStatusCode());
 
         // 2. Khóa tài khoản thành công (status = false)
-        EmployeeResponse.ApiResponse<EmployeeResponse.UpdateStatusData> patchResp = service.updateStatus(
+        ApiResponse<EmployeeResponse.UpdateStatusData> patchResp = service.updateStatus(
                 empId, new EmployeeRequest.UpdateStatusRequest(false), "admin-super-id");
         Assertions.assertEquals(200, patchResp.getStatus());
         Assertions.assertFalse(patchResp.getData().isStatus());
 
         // Kiểm tra lại chi tiết thấy status = false
-        EmployeeResponse.ApiResponse<EmployeeResponse.EmployeeDetailData> detail = service.getEmployeeById(empId);
+        ApiResponse<EmployeeResponse.EmployeeDetailData> detail = service.getEmployeeById(empId);
         Assertions.assertFalse(detail.getData().isStatus());
 
         // 3. Kích hoạt lại tài khoản thành công (status = true)
-        EmployeeResponse.ApiResponse<EmployeeResponse.UpdateStatusData> patchResp2 = service.updateStatus(
+        ApiResponse<EmployeeResponse.UpdateStatusData> patchResp2 = service.updateStatus(
                 empId, new EmployeeRequest.UpdateStatusRequest(true), "admin-super-id");
         Assertions.assertEquals(200, patchResp2.getStatus());
         Assertions.assertTrue(patchResp2.getData().isStatus());

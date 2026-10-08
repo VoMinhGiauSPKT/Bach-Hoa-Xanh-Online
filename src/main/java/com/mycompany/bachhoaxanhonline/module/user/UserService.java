@@ -1,6 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.user;
 
-import com.mycompany.bachhoaxanhonline.module.auth.Auth;
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public class UserService {
         }
     }
 
-    public UserResponse.ApiResponse<UserResponse.UserProfileData> getProfile(String userId) {
+    public ApiResponse<UserResponse.UserProfileData> getProfile(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
             throw new UserException(401, "Chưa đăng nhập, thiếu token hoặc token đã hết hạn / không hợp lệ");
         }
@@ -74,10 +75,10 @@ public class UserService {
                     addresses);
         }
 
-        return new UserResponse.ApiResponse<>(200, "Lấy thông tin tài khoản thành công", profileData);
+        return new ApiResponse<>(200, "Lấy thông tin tài khoản thành công", profileData);
     }
 
-    public UserResponse.ApiResponse<Void> changePassword(String userId, UserRequest.ChangePasswordRequest request) {
+    public ApiResponse<Void> changePassword(String userId, UserRequest.ChangePasswordRequest request) {
         if (userId == null || userId.trim().isEmpty()) {
             throw new UserException(401, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn");
         }
@@ -130,7 +131,7 @@ public class UserService {
 
         sendSecurityEmailAsync(user.getEmail(), user.getTenND());
 
-        return new UserResponse.ApiResponse<>(200, "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
+        return new ApiResponse<>(200, "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
     }
 
     // Gửi email cảnh báo bảo mật bất đồng bộ khi đổi mật khẩu thành công (mô phỏng)

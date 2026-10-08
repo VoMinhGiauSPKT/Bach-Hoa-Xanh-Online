@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.category;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +33,16 @@ public class CategoryService {
         }
     }
 
-    public CategoryResponse.ApiResponse<List<CategoryResponse.CategoryPublicItem>> getPublicCategories() {
+    public ApiResponse<List<CategoryResponse.CategoryPublicItem>> getPublicCategories() {
         List<Category> categories = categoryRepository.findAll(true);
         List<CategoryResponse.CategoryPublicItem> items = categories.stream()
                 .map(c -> new CategoryResponse.CategoryPublicItem(c.getMaLoaiSanPham(), c.getTenLoaiSanPham()))
                 .collect(Collectors.toList());
 
-        return new CategoryResponse.ApiResponse<>(200, "Lấy danh sách loại sản phẩm thành công", items);
+        return new ApiResponse<>(200, "Lấy danh sách loại sản phẩm thành công", items);
     }
 
-    public CategoryResponse.ApiResponse<CategoryResponse.CategoryData> getCategoryDetail(String id) {
+    public ApiResponse<CategoryResponse.CategoryData> getCategoryDetail(String id) {
         if (id == null || id.trim().isEmpty()) {
             throw new CategoryException(400, "Mã loại sản phẩm không được để trống");
         }
@@ -58,10 +60,10 @@ public class CategoryService {
                 c.getDeleted()
         );
 
-        return new CategoryResponse.ApiResponse<>(200, "Lấy chi tiết loại sản phẩm thành công", data);
+        return new ApiResponse<>(200, "Lấy chi tiết loại sản phẩm thành công", data);
     }
 
-    public CategoryResponse.ApiResponse<CategoryResponse.CategoryData> createCategory(CategoryRequest.CreateCategoryRequest request) {
+    public ApiResponse<CategoryResponse.CategoryData> createCategory(CategoryRequest.CreateCategoryRequest request) {
         if (request == null) {
             throw new CategoryException(400, "Thiếu thông tin loại sản phẩm");
         }
@@ -96,10 +98,10 @@ public class CategoryService {
                 category.getDeleted()
         );
 
-        return new CategoryResponse.ApiResponse<>(201, "Tạo loại sản phẩm thành công", data);
+        return new ApiResponse<>(201, "Tạo loại sản phẩm thành công", data);
     }
 
-    public CategoryResponse.ApiResponse<CategoryResponse.CategoryData> updateCategory(String id, CategoryRequest.UpdateCategoryRequest request) {
+    public ApiResponse<CategoryResponse.CategoryData> updateCategory(String id, CategoryRequest.UpdateCategoryRequest request) {
         if (id == null || id.trim().isEmpty()) {
             throw new CategoryException(400, "Mã loại sản phẩm không được để trống");
         }
@@ -135,10 +137,10 @@ public class CategoryService {
                 category.getDeleted()
         );
 
-        return new CategoryResponse.ApiResponse<>(200, "Cập nhật loại sản phẩm thành công", data);
+        return new ApiResponse<>(200, "Cập nhật loại sản phẩm thành công", data);
     }
 
-    public CategoryResponse.ApiResponse<Void> deleteCategory(String id) {
+    public ApiResponse<Void> deleteCategory(String id) {
         if (id == null || id.trim().isEmpty()) {
             throw new CategoryException(400, "Mã loại sản phẩm không được để trống");
         }
@@ -155,6 +157,6 @@ public class CategoryService {
 
         categoryRepository.softDelete(id.trim());
 
-        return new CategoryResponse.ApiResponse<>(200, "Xóa loại sản phẩm thành công");
+        return new ApiResponse<>(200, "Xóa loại sản phẩm thành công");
     }
 }

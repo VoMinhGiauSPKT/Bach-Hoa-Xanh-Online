@@ -1,54 +1,10 @@
 package com.mycompany.bachhoaxanhonline.module.promotion;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 public class PromotionResponse {
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ApiResponse<T> {
-        private int status;
-        private String message;
-        private T data;
-
-        public ApiResponse() {
-        }
-
-        public ApiResponse(int status, String message) {
-            this.status = status;
-            this.message = message;
-        }
-
-        public ApiResponse(int status, String message, T data) {
-            this.status = status;
-            this.message = message;
-            this.data = data;
-        }
-
-        public int getStatus() {
-            return status;
-        }
-
-        public void setStatus(int status) {
-            this.status = status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public T getData() {
-            return data;
-        }
-
-        public void setData(T data) {
-            this.data = data;
-        }
-    }
 
     // --- 1. GET /promotion/available DTO ---
     public static class AvailablePromotionItem {

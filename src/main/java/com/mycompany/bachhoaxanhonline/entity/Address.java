@@ -1,19 +1,41 @@
-package com.mycompany.bachhoaxanhonline.module.address;
+package com.mycompany.bachhoaxanhonline.entity;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "\"DiaChi\"")
 public class Address implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "\"maDiaChi\"", nullable = false)
     private Long maDiaChi;
+
+    @Column(name = "\"tenNguoiNhan\"", nullable = false, length = 100)
     private String tenNguoiNhan;
+
+    @Column(name = "\"soDienThoai\"", nullable = false, length = 20)
     private String soDienThoai;
+
+    @Column(name = "\"soNha\"", nullable = false, length = 255)
     private String soNha;
+
+    @Column(name = "\"phuong\"", length = 100)
     private String phuong;
+
+    @Column(name = "\"tinh\"", nullable = false, length = 100)
     private String tinh;
+
+    @Column(name = "\"laMacDinh\"", nullable = false)
     private Boolean laMacDinh = false;
+
+    @Column(name = "\"Deleted\"", nullable = false)
     private Boolean deleted = false;
+
+    @Column(name = "\"maKhachHang\"", nullable = false, length = 50)
     private String maKhachHang;
 
     public Address() {

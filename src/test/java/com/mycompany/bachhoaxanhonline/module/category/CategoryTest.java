@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.category;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -9,7 +11,7 @@ public class CategoryTest {
     @Test
     public void testGetPublicCategories() {
         CategoryService service = new CategoryService();
-        CategoryResponse.ApiResponse<List<CategoryResponse.CategoryPublicItem>> response = service.getPublicCategories();
+        ApiResponse<List<CategoryResponse.CategoryPublicItem>> response = service.getPublicCategories();
 
         Assertions.assertEquals(200, response.getStatus());
         Assertions.assertNotNull(response.getData());
@@ -30,7 +32,7 @@ public class CategoryTest {
 
         // 1. Tạo thành công (201)
         CategoryRequest.CreateCategoryRequest createReq = new CategoryRequest.CreateCategoryRequest(catId, catName, margin);
-        CategoryResponse.ApiResponse<CategoryResponse.CategoryData> createResp = service.createCategory(createReq);
+        ApiResponse<CategoryResponse.CategoryData> createResp = service.createCategory(createReq);
 
         Assertions.assertEquals(201, createResp.getStatus());
         Assertions.assertEquals(catId, createResp.getData().getCategoryId());
@@ -67,7 +69,7 @@ public class CategoryTest {
         service.createCategory(new CategoryRequest.CreateCategoryRequest(catId, catName, 0.25));
 
         // 1. Tìm thấy -> 200
-        CategoryResponse.ApiResponse<CategoryResponse.CategoryData> detailResp = service.getCategoryDetail(catId);
+        ApiResponse<CategoryResponse.CategoryData> detailResp = service.getCategoryDetail(catId);
         Assertions.assertEquals(200, detailResp.getStatus());
         Assertions.assertEquals(catId, detailResp.getData().getCategoryId());
         Assertions.assertEquals(catName, detailResp.getData().getCategoryName());
@@ -91,7 +93,7 @@ public class CategoryTest {
         // 1. Cập nhật thành công -> 200
         String newName = "Loai PostUpdate " + rand;
         CategoryRequest.UpdateCategoryRequest updateReq = new CategoryRequest.UpdateCategoryRequest(newName, 0.18);
-        CategoryResponse.ApiResponse<CategoryResponse.CategoryData> updateResp = service.updateCategory(catId, updateReq);
+        ApiResponse<CategoryResponse.CategoryData> updateResp = service.updateCategory(catId, updateReq);
 
         Assertions.assertEquals(200, updateResp.getStatus());
         Assertions.assertEquals(newName, updateResp.getData().getCategoryName());
@@ -113,7 +115,7 @@ public class CategoryTest {
         service.createCategory(new CategoryRequest.CreateCategoryRequest(catId, catName, 0.12));
 
         // 1. Xóa mềm thành công -> 200
-        CategoryResponse.ApiResponse<Void> delResp = service.deleteCategory(catId);
+        ApiResponse<Void> delResp = service.deleteCategory(catId);
         Assertions.assertEquals(200, delResp.getStatus());
 
         // 2. Sau khi xóa mềm, gọi getDetail -> 404

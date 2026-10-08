@@ -1,5 +1,7 @@
 package com.mycompany.bachhoaxanhonline.module.promotion;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
+import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -139,7 +141,7 @@ public class PromotionTest {
         Assertions.assertEquals(400, ex400.getStatusCode());
 
         // 2. Đơn hàng 50.000đ (chưa đạt đơn tối thiểu của cả 2 mã: 100K và 200K)
-        PromotionResponse.ApiResponse<List<PromotionResponse.AvailablePromotionItem>> resp50k =
+        ApiResponse<List<PromotionResponse.AvailablePromotionItem>> resp50k =
                 service.getAvailablePromotions(50000.0);
         Assertions.assertEquals(200, resp50k.getStatus());
         List<PromotionResponse.AvailablePromotionItem> list50k = resp50k.getData();
@@ -153,7 +155,7 @@ public class PromotionTest {
         }
 
         // 3. Đơn hàng 500.000đ (đủ điều kiện cả 2 mã)
-        PromotionResponse.ApiResponse<List<PromotionResponse.AvailablePromotionItem>> resp500k =
+        ApiResponse<List<PromotionResponse.AvailablePromotionItem>> resp500k =
                 service.getAvailablePromotions(500000.0);
         Assertions.assertEquals(200, resp500k.getStatus());
 
@@ -215,7 +217,7 @@ public class PromotionTest {
                 newCode, "Khuyen Mai Moi", "Mo ta", "PHANTRAM", 15.0, 50000.0, 200000.0, 100,
                 "2026-10-01T00:00:00.000Z", "2026-10-31T23:59:59.000Z"
         );
-        PromotionResponse.ApiResponse<PromotionResponse.CreatePromotionData> resp201 =
+        ApiResponse<PromotionResponse.CreatePromotionData> resp201 =
                 service.createPromotion(validReq);
         Assertions.assertEquals(201, resp201.getStatus());
         Assertions.assertEquals(newCode.toUpperCase(), resp201.getData().getPromotionCode());
@@ -234,7 +236,7 @@ public class PromotionTest {
         PromotionService service = new PromotionService();
 
         // 1. Tìm theo keyword
-        PromotionResponse.ApiResponse<PromotionResponse.AdminPromotionsData> respKw =
+        ApiResponse<PromotionResponse.AdminPromotionsData> respKw =
                 service.getAdminPromotions("TM50K", null, 1, 10);
         Assertions.assertEquals(200, respKw.getStatus());
         Assertions.assertTrue(respKw.getData().getTotal() >= 1);
@@ -242,7 +244,7 @@ public class PromotionTest {
                 .anyMatch(p -> p.getPromotionCode().equals(CODE_TIENMAT)));
 
         // 2. Tìm theo loại PHANTRAM
-        PromotionResponse.ApiResponse<PromotionResponse.AdminPromotionsData> respType =
+        ApiResponse<PromotionResponse.AdminPromotionsData> respType =
                 service.getAdminPromotions(null, "PHANTRAM", 1, 10);
         Assertions.assertEquals(200, respType.getStatus());
         Assertions.assertTrue(respType.getData().getPromotions().stream()
@@ -271,7 +273,7 @@ public class PromotionTest {
         Assertions.assertEquals(404, ex404.getStatusCode());
 
         // 2. Cập nhật chính xác -> 200 OK
-        PromotionResponse.ApiResponse<PromotionResponse.UpdatePromotionData> resp200 =
+        ApiResponse<PromotionResponse.UpdatePromotionData> resp200 =
                 service.updatePromotion(CODE_TIENMAT, updateReq);
         Assertions.assertEquals(200, resp200.getStatus());
         Assertions.assertEquals(CODE_TIENMAT, resp200.getData().getPromotionCode());
@@ -291,7 +293,7 @@ public class PromotionTest {
         Assertions.assertEquals(404, ex404.getStatusCode());
 
         // 2. Xóa mã hợp lệ -> 200 OK
-        PromotionResponse.ApiResponse<Void> resp200 = service.deletePromotion(CODE_PHANTRAM);
+        ApiResponse<Void> resp200 = service.deletePromotion(CODE_PHANTRAM);
         Assertions.assertEquals(200, resp200.getStatus());
 
         // 3. Kiểm tra mã đã thực sự bị xóa khỏi database

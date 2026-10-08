@@ -7,34 +7,19 @@
     <persistence-unit name="BachHoaXanhPU" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- Auth Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.auth.Auth</class>
-
-        <!-- Category Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.category.Category</class>
-
-        <!-- Product Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.product.Product</class>
-
-        <!-- Employee Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.employee.Employee</class>
-
-        <!-- Customer Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.user.Customer</class>
-
-        <!-- Review Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.review.Review</class>
-
-        <!-- Promotion Feature Entity -->
-        <class>com.mycompany.bachhoaxanhonline.module.promotion.Promotion</class>
-
-        <!-- Cart Feature Entities -->
-        <class>com.mycompany.bachhoaxanhonline.module.cart.Cart</class>
-        <class>com.mycompany.bachhoaxanhonline.module.cart.LineItem</class>
-
-        <!-- Order Feature Entities -->
-        <class>com.mycompany.bachhoaxanhonline.module.order.Order</class>
-        <class>com.mycompany.bachhoaxanhonline.module.order.Payment</class>
+        <!-- Centralized Domain Entities -->
+        <class>com.mycompany.bachhoaxanhonline.entity.Auth</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Customer</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Employee</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Address</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Category</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Product</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Promotion</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Review</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Cart</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.LineItem</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Order</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Payment</class>
 
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->

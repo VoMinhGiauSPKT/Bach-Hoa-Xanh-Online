@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.user;
 
+import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mycompany.bachhoaxanhonline.middleware.SecurityContext;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
@@ -40,15 +41,15 @@ public class UserController extends HttpServlet {
                 handleGetProfile(req, resp);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new UserResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại"));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại"));
             }
         } catch (UserService.UserException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new UserResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -63,19 +64,19 @@ public class UserController extends HttpServlet {
                 handleChangePassword(req, resp);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                        new UserResponse.ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại"));
+                        new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại"));
             }
         } catch (UserService.UserException e) {
             JsonUtil.sendJsonResponse(resp, e.getStatusCode(),
-                    new UserResponse.ApiResponse<>(e.getStatusCode(), e.getMessage()));
+                    new ApiResponse<>(e.getStatusCode(), e.getMessage()));
         } catch (JsonProcessingException e) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
                             "Dữ liệu gửi lên không đúng định dạng JSON: " + e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new ApiResponse<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             "Lỗi máy chủ nội bộ: " + e.getMessage()));
         }
     }
@@ -84,12 +85,12 @@ public class UserController extends HttpServlet {
         String userId = resolveUserId(req);
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED,
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED,
                             "Chưa đăng nhập, thiếu token hoặc token đã hết hạn / không hợp lệ"));
             return;
         }
 
-        UserResponse.ApiResponse<UserResponse.UserProfileData> response = userService.getProfile(userId);
+        ApiResponse<UserResponse.UserProfileData> response = userService.getProfile(userId);
         JsonUtil.sendJsonResponse(resp, response.getStatus(), response);
     }
 
@@ -97,7 +98,7 @@ public class UserController extends HttpServlet {
         String userId = resolveUserId(req);
         if (userId == null) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED,
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED,
                             "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
             return;
         }
@@ -107,12 +108,12 @@ public class UserController extends HttpServlet {
             request = JsonUtil.fromJson(req.getReader(), UserRequest.ChangePasswordRequest.class);
         } catch (Exception e) {
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    new UserResponse.ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
+                    new ApiResponse<>(HttpServletResponse.SC_BAD_REQUEST,
                             "Dữ liệu gửi lên không đúng định dạng JSON: " + e.getMessage()));
             return;
         }
 
-        UserResponse.ApiResponse<Void> response = userService.changePassword(userId, request);
+        ApiResponse<Void> response = userService.changePassword(userId, request);
 
         clearRefreshTokenCookie(resp);
 

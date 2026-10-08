@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.order;
 
+import com.mycompany.bachhoaxanhonline.entity.*;
 public class OrderRequest {
 
     public static class CreateOrderRequest {
