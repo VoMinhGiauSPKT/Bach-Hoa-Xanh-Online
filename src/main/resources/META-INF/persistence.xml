@@ -18,6 +18,10 @@
 
         <!-- Employee Feature Entity -->
         <class>com.mycompany.bachhoaxanhonline.module.employee.Employee</class>
+
+        <!-- Customer Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.module.user.Customer</class>
+
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
