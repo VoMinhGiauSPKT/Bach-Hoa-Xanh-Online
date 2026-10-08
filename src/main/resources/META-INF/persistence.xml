@@ -28,6 +28,14 @@
         <!-- Promotion Feature Entity -->
         <class>com.mycompany.bachhoaxanhonline.module.promotion.Promotion</class>
 
+        <!-- Cart Feature Entities -->
+        <class>com.mycompany.bachhoaxanhonline.module.cart.Cart</class>
+        <class>com.mycompany.bachhoaxanhonline.module.cart.LineItem</class>
+
+        <!-- Order Feature Entities -->
+        <class>com.mycompany.bachhoaxanhonline.module.order.Order</class>
+        <class>com.mycompany.bachhoaxanhonline.module.order.Payment</class>
+
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
