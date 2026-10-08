@@ -122,6 +122,11 @@ public class JwtAuthFilter implements Filter {
             return true;
         }
 
+        // Đánh giá sản phẩm công khai (GET /review/product/:productId)
+        if (path.equals("/review/product") || path.startsWith("/review/product/")) {
+            return true;
+        }
+
         // Tài nguyên tĩnh (CSS, JS, Fonts, Images)
         if (path.startsWith("/assets/") || path.startsWith("/static/")
                 || path.endsWith(".css") || path.endsWith(".js")
@@ -150,8 +155,15 @@ public class JwtAuthFilter implements Filter {
             return "ADMIN".equalsIgnoreCase(role);
         }
 
-        // Endpoint nhân viên nội bộ (/staff): Cho phép ADMIN và STAFF
-        if (path.equals("/staff") || path.startsWith("/staff/")) {
+        // Endpoint quản lý khuyến mãi (toàn bộ /promotion NGOẠI TRỪ /promotion/available): Chỉ ADMIN
+        if (path.equals("/promotion") || (path.startsWith("/promotion/") && !path.startsWith("/promotion/available"))) {
+            return "ADMIN".equalsIgnoreCase(role);
+        }
+
+
+        // Endpoint nhân viên nội bộ (/staff) hoặc kiểm duyệt đánh giá (GET /review): Cho phép ADMIN và STAFF
+        if (path.equals("/staff") || path.startsWith("/staff/")
+                || (path.equals("/review") && "GET".equalsIgnoreCase(method))) {
             return "ADMIN".equalsIgnoreCase(role) || "STAFF".equalsIgnoreCase(role);
         }
 

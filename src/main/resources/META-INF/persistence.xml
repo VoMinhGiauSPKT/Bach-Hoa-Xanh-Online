@@ -22,6 +22,12 @@
         <!-- Customer Feature Entity -->
         <class>com.mycompany.bachhoaxanhonline.module.user.Customer</class>
 
+        <!-- Review Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.module.review.Review</class>
+
+        <!-- Promotion Feature Entity -->
+        <class>com.mycompany.bachhoaxanhonline.module.promotion.Promotion</class>
+
         <properties>
             <!-- JDBC Connection Settings (Neon Database) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
