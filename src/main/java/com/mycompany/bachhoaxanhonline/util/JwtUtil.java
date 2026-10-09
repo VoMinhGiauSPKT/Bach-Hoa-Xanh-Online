@@ -10,8 +10,9 @@ import javax.crypto.SecretKey;
 
 public class JwtUtil {
 
-    // 256-bit secret key for HMAC-SHA256
-    private static final String SECRET_KEY_STRING = "BachHoaXanh_Super_Secure_JWT_Secret_Key_2026_Min_32_Chars!";
+    // 256-bit secret key for HMAC-SHA256 loaded from environment / .env
+    private static final String SECRET_KEY_STRING = ConfigUtil.get(
+            "JWT_SECRET", "BachHoaXanh_Super_Secure_JWT_Secret_Key_2026_Min_32_Chars!");
     private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
 
     // Access Token validity: 1 hour (in ms)

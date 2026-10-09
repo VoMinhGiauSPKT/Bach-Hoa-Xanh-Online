@@ -22,11 +22,11 @@
         <class>com.mycompany.bachhoaxanhonline.entity.Payment</class>
 
         <properties>
-            <!-- JDBC Connection Settings (Neon Database) -->
+            <!-- JDBC Connection Settings (Dynamically configured via JpaUtil from .env / System.getenv) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://ep-fancy-bar-b4ucs4nc-pooler.c-6.us-east-2.aws.neon.tech:5432/banhhoaxanhdb?sslmode=require" />
-            <property name="jakarta.persistence.jdbc.user" value="neondb_owner" />
-            <property name="jakarta.persistence.jdbc.password" value="npg_V2kS1syQPYae" />
+            <property name="jakarta.persistence.jdbc.url" value="" />
+            <property name="jakarta.persistence.jdbc.user" value="" />
+            <property name="jakarta.persistence.jdbc.password" value="" />
 
             <!-- Hibernate Dialect -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />

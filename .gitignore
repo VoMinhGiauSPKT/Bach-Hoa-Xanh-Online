@@ -6,3 +6,8 @@ target/
 *.iml
 .vscode/
 nbproject/private/
+
+# Environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
