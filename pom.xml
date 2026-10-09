@@ -102,6 +102,13 @@
             <version>5.0.0</version>
         </dependency>
 
+        <!-- PayOS Payment Integration -->
+        <dependency>
+            <groupId>vn.payos</groupId>
+            <artifactId>payos-java</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

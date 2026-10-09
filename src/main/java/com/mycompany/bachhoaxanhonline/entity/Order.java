@@ -54,11 +54,22 @@ public class Order implements Serializable {
     @Column(name = "\"tienGiamGia\"")
     private BigDecimal tienGiamGia;
 
+    @Column(name = "\"ghiChu\"", length = 1000)
+    private String ghiChu;
+
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"maDonHang\"", referencedColumnName = "\"maDonHang\"", insertable = false, updatable = false)
     private List<LineItem> lineItems = new ArrayList<>();
 
     public Order() {
+    }
+
+    public String getGhiChu() {
+        return ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
+        this.ghiChu = ghiChu;
     }
 
     public String getMaDonHang() {

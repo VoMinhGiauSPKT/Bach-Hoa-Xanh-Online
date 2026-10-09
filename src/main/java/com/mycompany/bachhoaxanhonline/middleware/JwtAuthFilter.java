@@ -138,6 +138,11 @@ public class JwtAuthFilter implements Filter {
             return true;
         }
 
+        // PayOS Webhook
+        if (path.equals("/payment/webhook") || path.startsWith("/payment/webhook/")) {
+            return true;
+        }
+
         return false;
     }
 

@@ -21,8 +21,11 @@ public class Payment implements Serializable {
     @Column(name = "\"soTien\"", nullable = false)
     private BigDecimal soTien;
 
-    @Column(name = "\"trangThai\"", nullable = false, length = 255)
-    private String trangThai; // THANHCONG, THATBAI
+    @Column(name = "\"trangThai\"", columnDefinition = "enum_thanhtoan_trangthai", nullable = false)
+    private String trangThai; // THANHCONG, THATBAI, DANGXULY
+
+    @Column(name = "\"Deleted\"")
+    private Boolean deleted = false;
 
     @Column(name = "\"ngayThanhToan\"", nullable = false)
     private LocalDateTime ngayThanhToan;
@@ -72,5 +75,13 @@ public class Payment implements Serializable {
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }
