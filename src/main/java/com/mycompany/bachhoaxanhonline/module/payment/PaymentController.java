@@ -1,9 +1,8 @@
 package com.mycompany.bachhoaxanhonline.module.payment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
-import com.mycompany.bachhoaxanhonline.module.order.OrderService;
 import com.mycompany.bachhoaxanhonline.util.JsonUtil;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -18,8 +17,8 @@ import java.io.IOException;
 @WebServlet(name = "PaymentController", urlPatterns = {"/payment", "/payment/*"})
 public class PaymentController extends HttpServlet {
 
-    private final OrderService orderService = new OrderService();
     private final PaymentService paymentService = new PaymentService();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -31,7 +30,9 @@ public class PaymentController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         setupCorsHeaders(req, resp);
         String pathInfo = req.getPathInfo();
-        if (pathInfo == null) pathInfo = "";
+        if (pathInfo == null) {
+            pathInfo = "";
+        }
 
         try {
             if (pathInfo.startsWith("/create/")) {
@@ -51,31 +52,30 @@ public class PaymentController extends HttpServlet {
                     return;
                 }
 
-                ApiResponse<String> response = orderService.createPaymentLink(orderId, userId, role);
+                ApiResponse<PaymentResponse.PaymentLinkData> response = paymentService.createPaymentLink(orderId, userId, role);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
 
             } else if (pathInfo.equals("/webhook") || pathInfo.equals("/webhook/")) {
-                // Endpoint: POST /payment/webhook (PayOS gọi vào đây)
+                // Endpoint: POST /payment/webhook (PayOS gọi vào để thông báo trạng thái thanh toán)
                 try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode jsonNode = mapper.readTree(req.getReader());
-                    Webhook webhookBody = mapper.convertValue(jsonNode, Webhook.class);
-                    
+                    JsonNode jsonNode = objectMapper.readTree(req.getReader());
+                    Webhook webhookBody = objectMapper.convertValue(jsonNode, Webhook.class);
+
                     ApiResponse<String> response = paymentService.processWebhook(webhookBody);
                     JsonUtil.sendJsonResponse(resp, response.getStatus(), response);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    sendError(resp, 400, "Dữ liệu webhook không hợp lệ");
+                    sendError(resp, 400, "Dữ liệu webhook không hợp lệ: " + e.getMessage());
                 }
 
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        } catch (OrderService.OrderException e) {
+        } catch (PaymentService.PaymentException e) {
             sendError(resp, e.getStatusCode(), e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(resp, 500, "Lỗi hệ thống: " + e.getMessage());
+            sendError(resp, 500, "Lỗi máy chủ nội bộ: " + e.getMessage());
         }
     }
 
@@ -100,6 +100,6 @@ public class PaymentController extends HttpServlet {
         }
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
     }
 }

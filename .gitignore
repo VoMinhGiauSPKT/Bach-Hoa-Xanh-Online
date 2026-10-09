@@ -11,3 +11,7 @@ nbproject/private/
 .env
 .env.local
 .env.*.local
+
+# API Documentation and Design (local reference)
+API_DOCUMENTATION.md
+APIDesign.md

@@ -225,97 +225,13 @@ public class OrderService {
         }
     }
 
+    /**
+     * @deprecated Chuyển sang sử dụng PaymentService.createPaymentLink để đúng chuẩn phân chia trách nhiệm module.
+     */
+    @Deprecated
     public ApiResponse<String> createPaymentLink(String orderId, String customerId, String role) {
-        EntityManager em = JpaUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            Order order = em.find(Order.class, orderId);
-            
-            if (order == null || Boolean.TRUE.equals(order.getDeleted())) {
-                throw new OrderException(404, "Không tìm thấy đơn hàng");
-            }
-
-            if ("CUSTOMER".equalsIgnoreCase(role) && !order.getMaKhachHang().equals(customerId)) {
-                throw new OrderException(403, "Bạn không có quyền thanh toán cho đơn hàng này");
-            }
-
-            if (!"CHUATHANHTOAN".equals(order.getTrangThai())) {
-                throw new OrderException(400, "Đơn hàng không ở trạng thái CHƯA THANH TOÁN");
-            }
-
-            if (order.getNgayHetHanThanhToan() != null && order.getNgayHetHanThanhToan().isBefore(LocalDateTime.now())) {
-                throw new OrderException(400, "Đơn hàng đã hết hạn thanh toán");
-            }
-
-            long orderCode = System.currentTimeMillis() % 100000000000L + Math.abs((long) orderId.hashCode() % 10000);
-            
-            order.setGhiChu(String.valueOf(orderCode));
-            em.merge(order);
-
-            BigDecimal finalAmount = (order.getTongTienSauGiamGia() != null && order.getTongTienSauGiamGia().compareTo(BigDecimal.ZERO) > 0)
-                    ? order.getTongTienSauGiamGia()
-                    : order.getTongTien();
-
-            Payment payment = new Payment();
-            payment.setMaTT(String.valueOf(orderCode));
-            payment.setOrder(order);
-            payment.setSoTien(finalAmount);
-            payment.setTrangThai("DANGXULY");
-            payment.setNgayThanhToan(LocalDateTime.now());
-            em.persist(payment);
-            
-            tx.commit();
-
-            String returnUrl = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_RETURN_URL", "http://localhost:8080/BachHoaXanhOnline/");
-            String cancelUrl = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_CANCEL_URL", "http://localhost:8080/BachHoaXanhOnline/");
-
-            vn.payos.type.PaymentData paymentData = vn.payos.type.PaymentData.builder()
-                .orderCode(orderCode)
-                .amount(finalAmount.intValue())
-                .description("Thanh toan don hang")
-                .returnUrl(returnUrl)
-                .cancelUrl(cancelUrl)
-                .buyerName(order.getTenNguoiNhan())
-                .buyerPhone(order.getSoDienThoaiNhan())
-                .buyerAddress(order.getDiaChiGiaoHang())
-                .build();
-
-            String clientId = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_CLIENT_ID");
-            String apiKey = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_API_KEY");
-            String checksumKey = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_CHECKSUM_KEY");
-
-            paymentData.setSignature(vn.payos.util.SignatureUtils.createSignatureOfPaymentRequest(paymentData, checksumKey));
-            
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            String jsonBody = mapper.writeValueAsString(paymentData);
-
-            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
-                .uri(java.net.URI.create("https://api-merchant.payos.vn/v2/payment-requests"))
-                .header("x-client-id", clientId)
-                .header("x-api-key", apiKey)
-                .header("Content-Type", "application/json")
-                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
-
-            java.net.http.HttpResponse<String> httpRes = java.net.http.HttpClient.newHttpClient().send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
-            
-            com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(httpRes.body());
-            if (!"00".equals(rootNode.path("code").asText())) {
-                throw new OrderException(400, "PayOS Error: " + rootNode.path("desc").asText());
-            }
-            
-            String checkoutUrl = rootNode.path("data").path("checkoutUrl").asText();
-            return new ApiResponse<>(200, "Tạo link thanh toán thành công", checkoutUrl);
-        } catch (OrderException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
-            e.printStackTrace();
-            throw new OrderException(500, "Lỗi gọi PayOS: " + e.getMessage());
-        } finally {
-            em.close();
-        }
+        com.mycompany.bachhoaxanhonline.module.payment.PaymentService paymentService = new com.mycompany.bachhoaxanhonline.module.payment.PaymentService();
+        com.mycompany.bachhoaxanhonline.module.payment.PaymentResponse.PaymentLinkData data = paymentService.createPaymentLink(orderId, customerId, role).getData();
+        return new ApiResponse<>(200, "Tạo link thanh toán thành công", data != null ? data.getCheckoutUrl() : null);
     }
 }
