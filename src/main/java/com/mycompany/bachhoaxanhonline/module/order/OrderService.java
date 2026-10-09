@@ -281,8 +281,32 @@ public class OrderService {
                 .buyerAddress(order.getDiaChiGiaoHang())
                 .build();
 
-            vn.payos.type.CheckoutResponseData data = com.mycompany.bachhoaxanhonline.config.PayOSConfig.getPayOS().createPaymentLink(paymentData);
-            return new ApiResponse<>(200, "Tạo link thanh toán thành công", data.getCheckoutUrl());
+            String clientId = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_CLIENT_ID");
+            String apiKey = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_API_KEY");
+            String checksumKey = com.mycompany.bachhoaxanhonline.util.ConfigUtil.get("PAYOS_CHECKSUM_KEY");
+
+            paymentData.setSignature(vn.payos.util.SignatureUtils.createSignatureOfPaymentRequest(paymentData, checksumKey));
+            
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String jsonBody = mapper.writeValueAsString(paymentData);
+
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api-merchant.payos.vn/v2/payment-requests"))
+                .header("x-client-id", clientId)
+                .header("x-api-key", apiKey)
+                .header("Content-Type", "application/json")
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+            java.net.http.HttpResponse<String> httpRes = java.net.http.HttpClient.newHttpClient().send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            
+            com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(httpRes.body());
+            if (!"00".equals(rootNode.path("code").asText())) {
+                throw new OrderException(400, "PayOS Error: " + rootNode.path("desc").asText());
+            }
+            
+            String checkoutUrl = rootNode.path("data").path("checkoutUrl").asText();
+            return new ApiResponse<>(200, "Tạo link thanh toán thành công", checkoutUrl);
         } catch (OrderException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
