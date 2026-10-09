@@ -11,7 +11,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Production runtime with Tomcat 10.1 (Jakarta EE 10 compatible)
-FROM tomcat:10.1-jdk17-temurin-alpine
+FROM tomcat:10.1-jdk17
 WORKDIR /usr/local/tomcat
 
 # Clean up default Tomcat sample applications
