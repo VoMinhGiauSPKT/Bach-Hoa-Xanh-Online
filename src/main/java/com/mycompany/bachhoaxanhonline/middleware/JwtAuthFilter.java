@@ -56,9 +56,25 @@ public class JwtAuthFilter implements Filter {
 
         // 3. Lấy đường dẫn tương đối (loại bỏ context path)
         String path = getRelativePath(httpRequest);
+        String method = httpRequest.getMethod();
 
         // 4. Cho phép các route công khai (Public Endpoints) đi qua
-        if (isPublicEndpoint(path)) {
+        if (isPublicEndpoint(path, method)) {
+            // Tùy chọn: Nếu client có gửi kèm token hợp lệ thì vẫn nạp SecurityContext
+            String authHeader = httpRequest.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7).trim();
+                if (!token.isEmpty() && JwtUtil.validateToken(token)) {
+                    try {
+                        String userId = JwtUtil.getUserIdFromToken(token);
+                        String role = JwtUtil.getRoleFromToken(token);
+                        Claims claims = JwtUtil.parseToken(token);
+                        String userName = claims.get("ten", String.class);
+                        SecurityContext.setContext(httpRequest, userId, role, userName, token);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
             chain.doFilter(request, response);
             return;
         }
@@ -107,9 +123,16 @@ public class JwtAuthFilter implements Filter {
     }
 
     /**
-     * Kiểm tra endpoint có phải là route công khai không cần đăng nhập hay không.
+     * Kiểm tra endpoint có phải là route công khai không cần đăng nhập hay không (mặc định GET).
      */
     public boolean isPublicEndpoint(String path) {
+        return isPublicEndpoint(path, "GET");
+    }
+
+    /**
+     * Kiểm tra endpoint và HTTP method có phải là route công khai không cần đăng nhập hay không.
+     */
+    public boolean isPublicEndpoint(String path, String method) {
         if (path == null || path.isEmpty() || "/".equals(path) || "/index.html".equals(path)) {
             return true;
         }
@@ -125,6 +148,17 @@ public class JwtAuthFilter implements Filter {
         // Đánh giá sản phẩm công khai (GET /review/product/:productId)
         if (path.equals("/review/product") || path.startsWith("/review/product/")) {
             return true;
+        }
+
+        // Danh mục sản phẩm công khai: GET /category
+        if ("GET".equalsIgnoreCase(method)) {
+            if (path.equals("/category") || path.equals("/category/")) {
+                return true;
+            }
+            // Danh sách & chi tiết sản phẩm công khai: GET /product, GET /product/*
+            if (path.equals("/product") || path.startsWith("/product/")) {
+                return true;
+            }
         }
 
         // Tài nguyên tĩnh (CSS, JS, Fonts, Images)
@@ -165,6 +199,15 @@ public class JwtAuthFilter implements Filter {
             return "ADMIN".equalsIgnoreCase(role);
         }
 
+        // Quản lý sản phẩm và danh mục (POST, PUT, DELETE): Chỉ ADMIN và STAFF
+        if ((path.equals("/product") || path.startsWith("/product/")
+                || path.equals("/category") || path.startsWith("/category/"))
+                && ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method))) {
+            if ("DELETE".equalsIgnoreCase(method) && (path.equals("/category") || path.startsWith("/category/"))) {
+                return "ADMIN".equalsIgnoreCase(role);
+            }
+            return "ADMIN".equalsIgnoreCase(role) || "STAFF".equalsIgnoreCase(role);
+        }
 
         // Endpoint nhân viên nội bộ (/staff) hoặc kiểm duyệt đánh giá (GET /review): Cho phép ADMIN và STAFF
         if (path.equals("/staff") || path.startsWith("/staff/")
