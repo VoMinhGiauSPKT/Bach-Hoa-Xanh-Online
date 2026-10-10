@@ -200,12 +200,14 @@ public class ProductRequest {
         }
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     public static class UpdateProductRequest {
         private String productName;
         private String imageUrl;
         private String categoryId;
         private String supplierId;
         private String unit;
+        private Integer quantity;
 
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate expiryDate;
@@ -269,6 +271,22 @@ public class ProductRequest {
 
         public void setExpiryDate(LocalDate expiryDate) {
             this.expiryDate = expiryDate;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
+        }
+
+        public Integer getStock() {
+            return quantity;
+        }
+
+        public void setStock(Integer stock) {
+            this.quantity = stock;
         }
     }
 }

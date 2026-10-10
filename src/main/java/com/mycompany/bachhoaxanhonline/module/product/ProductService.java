@@ -300,6 +300,8 @@ public class ProductService {
             throw new ProductException(400, "Nhà cung cấp không tồn tại trong hệ thống: " + request.getSupplierId());
         }
 
+        Integer stock = request.getQuantity() != null ? request.getQuantity() : request.getStock();
+
         productRepository.updateProductMetadata(
                 productId.trim(),
                 request.getProductName().trim(),
@@ -307,7 +309,8 @@ public class ProductService {
                 request.getCategoryId().trim(),
                 request.getSupplierId().trim(),
                 unit,
-                request.getExpiryDate()
+                request.getExpiryDate(),
+                stock
         );
 
         ProductResponse.UpdateProductData data = new ProductResponse.UpdateProductData(
@@ -315,7 +318,8 @@ public class ProductService {
                 request.getProductName().trim(),
                 request.getImageUrl() != null ? request.getImageUrl().trim() : null,
                 unit,
-                request.getExpiryDate()
+                request.getExpiryDate(),
+                stock
         );
 
         return new ApiResponse<>(200, "Cập nhật sản phẩm thành công", data);

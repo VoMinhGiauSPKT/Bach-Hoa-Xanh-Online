@@ -83,6 +83,8 @@ public class ReviewResponse {
         private String comment;
         private String createdAt;
         private CustomerPublicInfo customer;
+        private String reply;
+        private String repliedAt;
 
         public ProductReviewItem() {
         }
@@ -93,6 +95,16 @@ public class ReviewResponse {
             this.comment = comment;
             this.createdAt = createdAt;
             this.customer = customer;
+        }
+
+        public ProductReviewItem(Long reviewId, Integer rating, String comment, String createdAt, CustomerPublicInfo customer, String reply, String repliedAt) {
+            this.reviewId = reviewId;
+            this.rating = rating;
+            this.comment = comment;
+            this.createdAt = createdAt;
+            this.customer = customer;
+            this.reply = reply;
+            this.repliedAt = repliedAt;
         }
 
         public Long getReviewId() {
@@ -133,6 +145,22 @@ public class ReviewResponse {
 
         public void setCustomer(CustomerPublicInfo customer) {
             this.customer = customer;
+        }
+
+        public String getReply() {
+            return reply;
+        }
+
+        public void setReply(String reply) {
+            this.reply = reply;
+        }
+
+        public String getRepliedAt() {
+            return repliedAt;
+        }
+
+        public void setRepliedAt(String repliedAt) {
+            this.repliedAt = repliedAt;
         }
     }
 
@@ -569,6 +597,8 @@ public class ReviewResponse {
         private Boolean isDeleted;
         private AdminCustomerInfo customer;
         private AdminProductInfo product;
+        private String reply;
+        private String repliedAt;
 
         public AdminReviewItem() {
         }
@@ -581,6 +611,19 @@ public class ReviewResponse {
             this.isDeleted = isDeleted;
             this.customer = customer;
             this.product = product;
+        }
+
+        public AdminReviewItem(Long reviewId, Integer rating, String comment, String createdAt, Boolean isDeleted,
+                               AdminCustomerInfo customer, AdminProductInfo product, String reply, String repliedAt) {
+            this.reviewId = reviewId;
+            this.rating = rating;
+            this.comment = comment;
+            this.createdAt = createdAt;
+            this.isDeleted = isDeleted;
+            this.customer = customer;
+            this.product = product;
+            this.reply = reply;
+            this.repliedAt = repliedAt;
         }
 
         public Long getReviewId() {
@@ -637,6 +680,22 @@ public class ReviewResponse {
 
         public void setProduct(AdminProductInfo product) {
             this.product = product;
+        }
+
+        public String getReply() {
+            return reply;
+        }
+
+        public void setReply(String reply) {
+            this.reply = reply;
+        }
+
+        public String getRepliedAt() {
+            return repliedAt;
+        }
+
+        public void setRepliedAt(String repliedAt) {
+            this.repliedAt = repliedAt;
         }
     }
 

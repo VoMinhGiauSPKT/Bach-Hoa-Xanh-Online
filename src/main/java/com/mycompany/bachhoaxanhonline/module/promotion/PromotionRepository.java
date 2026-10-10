@@ -102,7 +102,7 @@ public class PromotionRepository {
     public PromotionResponse.AdminPromotionsData getAdminPromotions(String keyword, String type, int page, int limit) {
         EntityManager em = JpaUtil.getEntityManager();
         try {
-            StringBuilder whereSql = new StringBuilder(" WHERE 1=1");
+            StringBuilder whereSql = new StringBuilder(" WHERE \"Deleted\" = FALSE");
             if (keyword != null && !keyword.trim().isEmpty()) {
                 whereSql.append(" AND (LOWER(\"maKhuyenMai\") LIKE :keyword OR LOWER(\"tenKhuyenMai\") LIKE :keyword)");
             }
@@ -191,11 +191,12 @@ public class PromotionRepository {
      * Kiểm tra mã khuyến mãi đã tồn tại chưa
      */
     public boolean existsByCode(String code) {
+        if (code == null || code.trim().isEmpty()) return false;
         EntityManager em = JpaUtil.getEntityManager();
         try {
             Query query = em.createNativeQuery(
-                    "SELECT COUNT(1) FROM \"KhuyenMai\" WHERE \"maKhuyenMai\" = :code");
-            query.setParameter("code", code);
+                    "SELECT COUNT(1) FROM \"KhuyenMai\" WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code)) AND \"Deleted\" = FALSE");
+            query.setParameter("code", code.trim());
             return ((Number) query.getSingleResult()).longValue() > 0;
         } finally {
             em.close();
@@ -211,10 +212,10 @@ public class PromotionRepository {
             String sql = "SELECT \"maKhuyenMai\", \"tenKhuyenMai\", \"moTa\", CAST(\"loaiKhuyenMai\" AS varchar), "
                     + "\"giaTriGiam\", \"giamToiDa\", \"donHangToiThieu\", \"soLuongDung\", "
                     + "\"ngayBatDau\", \"ngayKetThuc\", \"Deleted\" "
-                    + "FROM \"KhuyenMai\" WHERE \"maKhuyenMai\" = :code";
+                    + "FROM \"KhuyenMai\" WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code))";
 
             Query query = em.createNativeQuery(sql);
-            query.setParameter("code", code);
+            query.setParameter("code", code.trim());
             List<?> rows = query.getResultList();
             if (rows.isEmpty()) {
                 return null;
@@ -247,12 +248,17 @@ public class PromotionRepository {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
+            // Nếu mã cũ từng bị xóa mềm, dọn sạch trước khi tạo mới để tránh xung đột khóa chính
+            em.createNativeQuery("DELETE FROM \"KhuyenMai\" WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code)) AND \"Deleted\" = TRUE")
+                    .setParameter("code", req.getPromotionCode())
+                    .executeUpdate();
+
             String sql = "INSERT INTO \"KhuyenMai\" ("
                     + "\"maKhuyenMai\", \"tenKhuyenMai\", \"moTa\", \"loaiKhuyenMai\", "
                     + "\"giaTriGiam\", \"giamToiDa\", \"donHangToiThieu\", \"soLuongDung\", "
                     + "\"ngayBatDau\", \"ngayKetThuc\", \"Deleted\") "
-                    + "VALUES (:code, :name, :desc, CAST(:type AS enum_loai_khuyenmai), "
-                    + ":val, :maxVal, :minOrder, :usage, :start, :end, false)";
+                    + "VALUES (CAST(:code AS varchar), CAST(:name AS varchar), CAST(:desc AS text), CAST(:type AS varchar)::enum_loai_khuyenmai, "
+                    + "CAST(:val AS numeric), CAST(:maxVal AS numeric), CAST(:minOrder AS numeric), CAST(:usage AS int), CAST(:start AS timestamp), CAST(:end AS timestamp), false)";
 
             Query query = em.createNativeQuery(sql);
             query.setParameter("code", req.getPromotionCode());
@@ -279,22 +285,24 @@ public class PromotionRepository {
     /**
      * 4. Admin cập nhật khuyến mãi (PUT /promotion/:code)
      */
-    public boolean updatePromotion(String code, String name, String desc, Integer remainingUsage, LocalDateTime endLdt) {
+    public boolean updatePromotion(String code, String name, String desc, Double maxDiscount, Integer remainingUsage, LocalDateTime endLdt) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             String sql = "UPDATE \"KhuyenMai\" SET "
-                    + "\"tenKhuyenMai\" = COALESCE(:name, \"tenKhuyenMai\"), "
-                    + "\"moTa\" = COALESCE(:desc, \"moTa\"), "
-                    + "\"soLuongDung\" = COALESCE(:usage, \"soLuongDung\"), "
-                    + "\"ngayKetThuc\" = COALESCE(:endDate, \"ngayKetThuc\") "
-                    + "WHERE \"maKhuyenMai\" = :code";
+                    + "\"tenKhuyenMai\" = COALESCE(CAST(:name AS varchar), \"tenKhuyenMai\"), "
+                    + "\"moTa\" = COALESCE(CAST(:desc AS text), \"moTa\"), "
+                    + "\"giamToiDa\" = COALESCE(CAST(:maxVal AS numeric), \"giamToiDa\"), "
+                    + "\"soLuongDung\" = COALESCE(CAST(:usage AS int), \"soLuongDung\"), "
+                    + "\"ngayKetThuc\" = COALESCE(CAST(:endDate AS timestamp), \"ngayKetThuc\") "
+                    + "WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code))";
 
             Query query = em.createNativeQuery(sql);
-            query.setParameter("code", code);
+            query.setParameter("code", code.trim());
             query.setParameter("name", name);
             query.setParameter("desc", desc);
+            query.setParameter("maxVal", maxDiscount);
             query.setParameter("usage", remainingUsage);
             query.setParameter("endDate", endLdt);
 
@@ -310,24 +318,48 @@ public class PromotionRepository {
     }
 
     /**
-     * 5. Admin xóa khuyến mãi (DELETE /promotion/:code - Xóa cứng)
+     * 5. Admin xóa khuyến mãi (DELETE /promotion/:code)
      */
     public boolean deletePromotion(String code) {
+        if (code == null || code.trim().isEmpty()) return false;
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
+        boolean hardDeleteSuccess = false;
         try {
             tx.begin();
             Query query = em.createNativeQuery(
-                    "DELETE FROM \"KhuyenMai\" WHERE \"maKhuyenMai\" = :code");
-            query.setParameter("code", code);
+                    "DELETE FROM \"KhuyenMai\" WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code))");
+            query.setParameter("code", code.trim());
             int deleted = query.executeUpdate();
             tx.commit();
-            return deleted > 0;
+            hardDeleteSuccess = deleted > 0;
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
-            throw new RuntimeException("Lỗi xóa khuyến mãi: " + e.getMessage(), e);
+            hardDeleteSuccess = false;
         } finally {
             em.close();
+        }
+
+        if (hardDeleteSuccess) {
+            return true;
+        }
+
+        // Fallback an toàn sang soft delete (đánh dấu Deleted = true) bằng EntityManager mới
+        EntityManager em2 = JpaUtil.getEntityManager();
+        EntityTransaction tx2 = em2.getTransaction();
+        try {
+            tx2.begin();
+            Query qSoft = em2.createNativeQuery(
+                    "UPDATE \"KhuyenMai\" SET \"Deleted\" = true WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:code))");
+            qSoft.setParameter("code", code.trim());
+            int softDel = qSoft.executeUpdate();
+            tx2.commit();
+            return softDel > 0;
+        } catch (Exception e2) {
+            if (tx2.isActive()) tx2.rollback();
+            throw new RuntimeException("Lỗi xóa khuyến mãi: " + e2.getMessage(), e2);
+        } finally {
+            em2.close();
         }
     }
 }

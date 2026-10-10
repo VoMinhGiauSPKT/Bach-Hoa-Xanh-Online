@@ -1,5 +1,6 @@
 package com.mycompany.bachhoaxanhonline.module.order;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.cart.CartResponse.LineItemData;
 import java.math.BigDecimal;
@@ -23,9 +24,13 @@ public class OrderResponse {
 
     public static class OrderSummary {
         private String maDonHang;
+
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime ngayLap;
+
         private BigDecimal tongTien;
         private String trangThai;
+        private String phuongThucTT;
         private int soLuongMatHang;
 
         public String getMaDonHang() { return maDonHang; }
@@ -36,6 +41,8 @@ public class OrderResponse {
         public void setTongTien(BigDecimal tongTien) { this.tongTien = tongTien; }
         public String getTrangThai() { return trangThai; }
         public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+        public String getPhuongThucTT() { return phuongThucTT; }
+        public void setPhuongThucTT(String phuongThucTT) { this.phuongThucTT = phuongThucTT; }
         public int getSoLuongMatHang() { return soLuongMatHang; }
         public void setSoLuongMatHang(int soLuongMatHang) { this.soLuongMatHang = soLuongMatHang; }
     }
@@ -43,7 +50,10 @@ public class OrderResponse {
     public static class OrderDetailData {
         private String maDonHang;
         private String maKhachHang;
+
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime ngayLap;
+
         private BigDecimal tongTien;
         private String trangThai;
         private String phuongThucTT;

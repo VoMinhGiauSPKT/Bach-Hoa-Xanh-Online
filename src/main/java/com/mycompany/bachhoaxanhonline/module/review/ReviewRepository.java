@@ -15,6 +15,20 @@ public class ReviewRepository {
 
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
+    static {
+        try {
+            EntityManager em = JpaUtil.getEntityManager();
+            EntityTransaction tx = em.getTransaction();
+            tx.begin();
+            em.createNativeQuery("ALTER TABLE \"DanhGia\" ADD COLUMN IF NOT EXISTS \"phanHoi\" TEXT").executeUpdate();
+            em.createNativeQuery("ALTER TABLE \"DanhGia\" ADD COLUMN IF NOT EXISTS \"ngayPhanHoi\" TIMESTAMP").executeUpdate();
+            tx.commit();
+            em.close();
+        } catch (Exception e) {
+            System.err.println("Notice: Could not alter DanhGia table: " + e.getMessage());
+        }
+    }
+
     /**
      * Kiểm tra sản phẩm có tồn tại và chưa bị xóa mềm hay không.
      */
@@ -218,7 +232,7 @@ public class ReviewRepository {
     public List<ReviewResponse.ProductReviewItem> findProductReviews(String productId, Integer rating, int limit, int offset) {
         EntityManager em = JpaUtil.getEntityManager();
         try {
-            String sql = "SELECT dg.\"maDanhGia\", dg.\"soSao\", dg.\"noiDung\", dg.\"ngayDang\", nd.\"tenND\", nd.\"tenDangNhap\" "
+            String sql = "SELECT dg.\"maDanhGia\", dg.\"soSao\", dg.\"noiDung\", dg.\"ngayDang\", nd.\"tenND\", nd.\"tenDangNhap\", dg.\"phanHoi\", dg.\"ngayPhanHoi\" "
                     + "FROM \"DanhGia\" dg "
                     + "LEFT JOIN \"NguoiDung\" nd ON dg.\"maKhachHang\" = nd.\"maNguoiDung\" "
                     + "WHERE dg.\"maSanPham\" = :productId AND dg.\"Deleted\" = FALSE "
@@ -243,9 +257,11 @@ public class ReviewRepository {
                 String created = formatIso8601(r[3]);
                 String fullName = toString(r[4]);
                 String username = toString(r[5]);
+                String reply = toString(r[6]);
+                String repliedAt = formatIso8601(r[7]);
 
                 ReviewResponse.CustomerPublicInfo cust = new ReviewResponse.CustomerPublicInfo(fullName, username);
-                items.add(new ReviewResponse.ProductReviewItem(revId, star, comment, created, cust));
+                items.add(new ReviewResponse.ProductReviewItem(revId, star, comment, created, cust, reply, repliedAt));
             }
             return items;
         } finally {
@@ -347,7 +363,8 @@ public class ReviewRepository {
             StringBuilder sql = new StringBuilder(
                     "SELECT dg.\"maDanhGia\", dg.\"soSao\", dg.\"noiDung\", dg.\"ngayDang\", dg.\"Deleted\", "
                     + "       nd.\"maNguoiDung\", nd.\"tenND\", nd.\"tenDangNhap\", nd.\"soDienThoai\", "
-                    + "       sp.\"maSanPham\", sp.\"tenSanPham\", sp.\"hinhAnh\" "
+                    + "       sp.\"maSanPham\", sp.\"tenSanPham\", sp.\"hinhAnh\", "
+                    + "       dg.\"phanHoi\", dg.\"ngayPhanHoi\" "
                     + "FROM \"DanhGia\" dg "
                     + "LEFT JOIN \"NguoiDung\" nd ON dg.\"maKhachHang\" = nd.\"maNguoiDung\" "
                     + "LEFT JOIN \"SanPham\" sp ON dg.\"maSanPham\" = sp.\"maSanPham\" "
@@ -381,9 +398,32 @@ public class ReviewRepository {
                 String spImg = toString(r[11]);
                 ReviewResponse.AdminProductInfo prod = new ReviewResponse.AdminProductInfo(spId, spName, spImg);
 
-                items.add(new ReviewResponse.AdminReviewItem(revId, star, comment, created, deleted, cust, prod));
+                String reply = toString(r[12]);
+                String repliedAt = formatIso8601(r[13]);
+
+                items.add(new ReviewResponse.AdminReviewItem(revId, star, comment, created, deleted, cust, prod, reply, repliedAt));
             }
             return items;
+        } finally {
+            em.close();
+        }
+    }
+
+    public void saveReply(Long reviewId, String replyText, LocalDateTime repliedAt) {
+        EntityManager em = JpaUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.createNativeQuery(
+                    "UPDATE \"DanhGia\" SET \"phanHoi\" = :reply, \"ngayPhanHoi\" = :repliedAt WHERE \"maDanhGia\" = :id")
+                    .setParameter("reply", replyText)
+                    .setParameter("repliedAt", repliedAt)
+                    .setParameter("id", reviewId)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw new RuntimeException("Lỗi lưu phản hồi: " + e.getMessage(), e);
         } finally {
             em.close();
         }

@@ -8,6 +8,9 @@ public class OrderRequest {
         private String soDienThoaiNhan;
         private String diaChiGiaoHang;
 
+        private String ghiChu;
+        private String phuongThucTT;
+
         public String getTenNguoiNhan() {
             return tenNguoiNhan;
         }
@@ -30,6 +33,22 @@ public class OrderRequest {
 
         public void setDiaChiGiaoHang(String diaChiGiaoHang) {
             this.diaChiGiaoHang = diaChiGiaoHang;
+        }
+
+        public String getGhiChu() {
+            return ghiChu;
+        }
+
+        public void setGhiChu(String ghiChu) {
+            this.ghiChu = ghiChu;
+        }
+
+        public String getPhuongThucTT() {
+            return phuongThucTT;
+        }
+
+        public void setPhuongThucTT(String phuongThucTT) {
+            this.phuongThucTT = phuongThucTT;
         }
     }
 }

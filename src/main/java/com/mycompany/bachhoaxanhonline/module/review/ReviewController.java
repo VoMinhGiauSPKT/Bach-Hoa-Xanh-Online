@@ -65,7 +65,10 @@ public class ReviewController extends HttpServlet {
         }
 
         try {
-            if (pathInfo.isEmpty() || "/".equals(pathInfo)) {
+            if (pathInfo.matches("/\\d+/reply")) {
+                Long reviewId = extractIdFromPath(pathInfo.substring(0, pathInfo.lastIndexOf("/reply")));
+                handleReplyReview(req, resp, reviewId);
+            } else if (pathInfo.isEmpty() || "/".equals(pathInfo)) {
                 // 2. POST /review (Khách hàng)
                 handleCreateReview(req, resp);
             } else {
@@ -234,6 +237,23 @@ public class ReviewController extends HttpServlet {
 
         ApiResponse<ReviewResponse.AdminReviewsData> response =
                 reviewService.getAdminReviews(isDeleted, productId, customerId, rating, keyword, page, limit);
+        JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+    }
+
+    private void handleReplyReview(HttpServletRequest req, HttpServletResponse resp, Long reviewId) throws IOException {
+        String userId = SecurityContext.getUserId(req);
+        String userRole = SecurityContext.getUserRole(req);
+
+        if (userId == null) {
+            JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED,
+                    new ApiResponse<>(HttpServletResponse.SC_UNAUTHORIZED, "Chưa đăng nhập hoặc token không hợp lệ / hết hạn"));
+            return;
+        }
+
+        java.util.Map<String, Object> body = JsonUtil.fromJson(req.getReader(), java.util.Map.class);
+        String reply = body != null ? (String) body.get("reply") : null;
+
+        ApiResponse<Void> response = reviewService.replyReview(userId, userRole, reviewId, reply);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }
 

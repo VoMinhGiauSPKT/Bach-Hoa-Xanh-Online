@@ -121,6 +121,7 @@ public class PromotionRequest {
     public static class UpdatePromotionRequest {
         private String promotionName;
         private String description;
+        private Double maxDiscount;
         private Integer remainingUsage;
         private String endDate;
 
@@ -148,6 +149,14 @@ public class PromotionRequest {
 
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        public Double getMaxDiscount() {
+            return maxDiscount;
+        }
+
+        public void setMaxDiscount(Double maxDiscount) {
+            this.maxDiscount = maxDiscount;
         }
 
         public Integer getRemainingUsage() {

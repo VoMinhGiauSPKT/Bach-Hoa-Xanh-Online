@@ -10,8 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "\"DonHang\"")
 @NamedQueries({
-    @NamedQuery(name = "Order.findByCustomerId", query = "SELECT o FROM Order o WHERE o.maKhachHang = :maKhachHang ORDER BY o.ngayLap DESC"),
-    @NamedQuery(name = "Order.findAll", query = "SELECT o FROM Order o ORDER BY o.ngayLap DESC")
+    @NamedQuery(name = "Order.findByCustomerId", query = "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.lineItems WHERE o.maKhachHang = :maKhachHang ORDER BY o.ngayLap DESC"),
+    @NamedQuery(name = "Order.findAll", query = "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.lineItems ORDER BY o.ngayLap DESC")
 })
 public class Order implements Serializable {
 

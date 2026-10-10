@@ -220,4 +220,24 @@ public class ReviewService {
         ReviewResponse.AdminReviewsData data = new ReviewResponse.AdminReviewsData(total, page, limit, reviews);
         return new ApiResponse<>(200, "Lấy danh sách đánh giá quản trị thành công", data);
     }
+
+    /**
+     * 7. POST /review/:id/reply (Nhân viên / Quản trị viên phản hồi đánh giá)
+     */
+    public ApiResponse<Void> replyReview(String userId, String userRole, Long reviewId, String replyText) {
+        if (!"ADMIN".equalsIgnoreCase(userRole) && !"STAFF".equalsIgnoreCase(userRole)) {
+            throw new ReviewException(403, "Chỉ nhân viên hoặc quản trị viên mới được quyền phản hồi đánh giá");
+        }
+        if (replyText == null || replyText.trim().isEmpty()) {
+            throw new ReviewException(400, "Nội dung phản hồi không được để trống");
+        }
+
+        Optional<Review> opt = reviewRepository.findById(reviewId);
+        if (opt.isEmpty() || Boolean.TRUE.equals(opt.get().getDeleted())) {
+            throw new ReviewException(404, "Không tìm thấy đánh giá");
+        }
+
+        reviewRepository.saveReply(reviewId, replyText.trim(), LocalDateTime.now());
+        return new ApiResponse<>(200, "Phản hồi đánh giá thành công");
+    }
 }

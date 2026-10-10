@@ -145,28 +145,44 @@ public class ProductRepository {
     }
 
     public int updateProductMetadata(String productId, String productName, String imageUrl,
-                                     String categoryId, String supplierId, String unit, LocalDate expiryDate) {
+                                     String categoryId, String supplierId, String unit,
+                                     LocalDate expiryDate, Integer stock) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            int updated = em.createQuery(
-                    "UPDATE Product p SET "
-                    + "p.tenSanPham = :tenSanPham, "
-                    + "p.hinhAnh = :hinhAnh, "
-                    + "p.maLoai = :maLoai, "
-                    + "p.maNhaCungCap = :maNhaCungCap, "
-                    + "p.donViTinh = :donViTinh, "
-                    + "p.hanSuDung = :hanSuDung "
-                    + "WHERE p.maSanPham = :productId AND p.deleted = false")
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("UPDATE Product p SET ")
+                .append("p.tenSanPham = :tenSanPham, ")
+                .append("p.hinhAnh = :hinhAnh, ")
+                .append("p.maLoai = :maLoai, ")
+                .append("p.maNhaCungCap = :maNhaCungCap, ")
+                .append("p.donViTinh = :donViTinh, ")
+                .append("p.hanSuDung = :hanSuDung");
+
+            if (stock != null) {
+                jpql.append(", p.soLuong = :soLuong");
+            }
+
+            jpql.append(" WHERE UPPER(TRIM(p.maSanPham)) = UPPER(TRIM(:productId)) AND p.deleted = false");
+
+            var query = em.createQuery(jpql.toString())
                     .setParameter("tenSanPham", productName)
                     .setParameter("hinhAnh", imageUrl)
                     .setParameter("maLoai", categoryId)
                     .setParameter("maNhaCungCap", supplierId)
                     .setParameter("donViTinh", unit)
                     .setParameter("hanSuDung", expiryDate)
-                    .setParameter("productId", productId.trim())
-                    .executeUpdate();
+                    .setParameter("productId", productId.trim());
+
+            if (stock != null) {
+                query.setParameter("soLuong", stock);
+            }
+
+            int updated = query.executeUpdate();
+            if (updated == 0) {
+                throw new RuntimeException("Không tìm thấy sản phẩm có mã: " + productId);
+            }
             tx.commit();
             return updated;
         } catch (Exception e) {
@@ -177,6 +193,11 @@ public class ProductRepository {
         } finally {
             em.close();
         }
+    }
+
+    public int updateProductMetadata(String productId, String productName, String imageUrl,
+                                     String categoryId, String supplierId, String unit, LocalDate expiryDate) {
+        return updateProductMetadata(productId, productName, imageUrl, categoryId, supplierId, unit, expiryDate, null);
     }
 
     public boolean softDelete(String productId) {

@@ -86,6 +86,14 @@ public class OrderService {
             order.setNgayHetHanThanhToan(LocalDateTime.now().plusDays(3));
             order.setTienGiamGia(BigDecimal.ZERO);
             order.setTongTienSauGiamGia(totalAmount);
+            String pMethod = request.getPhuongThucTT();
+            if (pMethod == null || pMethod.trim().isEmpty()) {
+                pMethod = request.getGhiChu();
+            }
+            if (pMethod == null || pMethod.trim().isEmpty()) {
+                pMethod = "COD";
+            }
+            order.setGhiChu(pMethod);
 
             em.persist(order);
 
@@ -168,7 +176,16 @@ public class OrderService {
             summary.setNgayLap(o.getNgayLap());
             summary.setTongTien(o.getTongTien());
             summary.setTrangThai(o.getTrangThai());
-            summary.setSoLuongMatHang(o.getLineItems() != null ? o.getLineItems().size() : 0);
+            summary.setPhuongThucTT(resolvePaymentMethod(o));
+            int itemCount = 0;
+            try {
+                if (o.getLineItems() != null) {
+                    itemCount = o.getLineItems().size();
+                }
+            } catch (Exception ignored) {
+                itemCount = 0;
+            }
+            summary.setSoLuongMatHang(itemCount);
             summaries.add(summary);
         }
         data.setItems(summaries);
@@ -176,10 +193,26 @@ public class OrderService {
         return new ApiResponse<>(200, "Lấy danh sách đơn hàng thành công", data);
     }
 
+    private String resolvePaymentMethod(Order o) {
+        if (o == null) return "COD";
+        String note = o.getGhiChu();
+        if (note != null && !note.trim().isEmpty()) {
+            String trimmed = note.trim();
+            // Nếu ghi chú là dãy số (orderCode PayOS ví dụ 91646512293) hoặc là VIETQR / PAYOS
+            if (trimmed.matches("\\d+") || "VIETQR".equalsIgnoreCase(trimmed) || "PAYOS".equalsIgnoreCase(trimmed)) {
+                return "VIETQR";
+            }
+            if ("COD".equalsIgnoreCase(trimmed)) {
+                return "COD";
+            }
+        }
+        return "COD";
+    }
+
     public ApiResponse<OrderResponse.OrderDetailData> getOrderDetail(String orderId, String customerId, String role) {
         EntityManager em = JpaUtil.getEntityManager();
         try {
-            Order order = em.createQuery("SELECT o FROM Order o LEFT JOIN FETCH o.lineItems WHERE o.maDonHang = :orderId", Order.class)
+            Order order = em.createQuery("SELECT o FROM Order o WHERE o.maDonHang = :orderId", Order.class)
                     .setParameter("orderId", orderId)
                     .getResultStream()
                     .findFirst()
@@ -195,13 +228,16 @@ public class OrderService {
             data.setNgayLap(order.getNgayLap());
             data.setTongTien(order.getTongTien());
             data.setTrangThai(order.getTrangThai());
-            data.setPhuongThucTT("COD"); // Mặc định là COD vì CSDL không lưu trường này
+            data.setPhuongThucTT(resolvePaymentMethod(order));
             data.setTenNguoiNhan(order.getTenNguoiNhan());
             data.setSoDienThoaiNhan(order.getSoDienThoaiNhan());
             data.setDiaChiGiaoHang(order.getDiaChiGiaoHang());
 
             List<LineItemData> itemDataList = new ArrayList<>();
-            for (LineItem item : order.getLineItems()) {
+            List<LineItem> lineItems = em.createQuery("SELECT l FROM LineItem l WHERE l.maDonHang = :orderId", LineItem.class)
+                    .setParameter("orderId", orderId)
+                    .getResultList();
+            for (LineItem item : lineItems) {
                 LineItemData itemData = new LineItemData();
                 itemData.setLineItemId(item.getLineItemId());
                 itemData.setProductId(item.getMaSanPham());

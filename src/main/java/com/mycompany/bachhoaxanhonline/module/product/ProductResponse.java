@@ -424,6 +424,7 @@ public class ProductResponse {
         private String productName;
         private String imageUrl;
         private String unit;
+        private Integer stock;
 
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate expiryDate;
@@ -433,11 +434,17 @@ public class ProductResponse {
 
         public UpdateProductData(String productId, String productName, String imageUrl,
                                  String unit, LocalDate expiryDate) {
+            this(productId, productName, imageUrl, unit, expiryDate, null);
+        }
+
+        public UpdateProductData(String productId, String productName, String imageUrl,
+                                 String unit, LocalDate expiryDate, Integer stock) {
             this.productId = productId;
             this.productName = productName;
             this.imageUrl = imageUrl;
             this.unit = unit;
             this.expiryDate = expiryDate;
+            this.stock = stock;
         }
 
         public String getProductId() {
@@ -470,6 +477,14 @@ public class ProductResponse {
 
         public void setUnit(String unit) {
             this.unit = unit;
+        }
+
+        public Integer getStock() {
+            return stock;
+        }
+
+        public void setStock(Integer stock) {
+            this.stock = stock;
         }
 
         public LocalDate getExpiryDate() {

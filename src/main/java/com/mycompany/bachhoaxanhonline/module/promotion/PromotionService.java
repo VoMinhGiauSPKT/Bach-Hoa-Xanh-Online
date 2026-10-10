@@ -25,26 +25,35 @@ public class PromotionService {
         }
     }
 
-    private LocalDateTime parseDateTime(String dateStr) {
+    private LocalDateTime parseDateTime(String dateStr, boolean isEndOfDay) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return null;
         }
+        String trimmed = dateStr.trim();
         try {
             // Trường hợp ISO có Z hoặc offset: 2026-10-06T00:00:00.000Z
-            if (dateStr.endsWith("Z") || dateStr.contains("+")) {
-                Instant instant = Instant.parse(dateStr);
+            if (trimmed.endsWith("Z") || trimmed.contains("+")) {
+                Instant instant = Instant.parse(trimmed);
                 return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
             }
-            // Trường hợp LocalDateTime thông thường
-            return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            // Trường hợp có T (ISO local datetime)
+            if (trimmed.contains("T")) {
+                return LocalDateTime.parse(trimmed, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
+            // Trường hợp yyyy-MM-dd
+            String timePart = isEndOfDay ? "T23:59:59" : "T00:00:00";
+            return LocalDateTime.parse(trimmed + timePart);
         } catch (Exception e) {
             try {
-                // Thử định dạng yyyy-MM-dd
-                return LocalDateTime.parse(dateStr + "T00:00:00");
+                return LocalDateTime.parse(trimmed + (isEndOfDay ? "T23:59:59" : "T00:00:00"));
             } catch (Exception ex) {
                 throw new PromotionException(400, "Định dạng ngày không hợp lệ: " + dateStr);
             }
         }
+    }
+
+    private LocalDateTime parseDateTime(String dateStr) {
+        return parseDateTime(dateStr, false);
     }
 
     /**
@@ -128,8 +137,8 @@ public class PromotionService {
         }
 
         // Kiểm tra ngày bắt đầu & ngày kết thúc
-        LocalDateTime startLdt = parseDateTime(req.getStartDate());
-        LocalDateTime endLdt = parseDateTime(req.getEndDate());
+        LocalDateTime startLdt = parseDateTime(req.getStartDate(), false);
+        LocalDateTime endLdt = parseDateTime(req.getEndDate(), true);
         if (startLdt == null || endLdt == null) {
             throw new PromotionException(400, "startDate và endDate không được để trống.");
         }
@@ -173,7 +182,7 @@ public class PromotionService {
 
         LocalDateTime endLdt = null;
         if (req != null && req.getEndDate() != null && !req.getEndDate().trim().isEmpty()) {
-            endLdt = parseDateTime(req.getEndDate());
+            endLdt = parseDateTime(req.getEndDate(), true);
             if (!endLdt.isAfter(existing.getNgayBatDau())) {
                 throw new PromotionException(400, "ngày kết thúc phải sau ngày bắt đầu.");
             }
@@ -181,12 +190,13 @@ public class PromotionService {
 
         String name = (req != null && req.getPromotionName() != null) ? req.getPromotionName().trim() : null;
         String desc = (req != null && req.getDescription() != null) ? req.getDescription().trim() : null;
+        Double maxDiscount = (req != null) ? req.getMaxDiscount() : null;
         Integer usage = (req != null) ? req.getRemainingUsage() : null;
         if (usage != null && usage < 0) {
             throw new PromotionException(400, "remainingUsage không được âm.");
         }
 
-        promotionRepository.updatePromotion(code, name, desc, usage, endLdt);
+        promotionRepository.updatePromotion(code, name, desc, maxDiscount, usage, endLdt);
 
         String finalName = name != null ? name : existing.getTenKhuyenMai();
         int finalUsage = usage != null ? usage : existing.getSoLuongDung();

@@ -33,6 +33,12 @@ public class Review implements Serializable {
     @Column(name = "\"maSanPham\"", nullable = false, length = 255)
     private String maSanPham;
 
+    @Column(name = "\"phanHoi\"")
+    private String phanHoi;
+
+    @Column(name = "\"ngayPhanHoi\"")
+    private LocalDateTime ngayPhanHoi;
+
     public Review() {
     }
 
@@ -97,7 +103,19 @@ public class Review implements Serializable {
         return maSanPham;
     }
 
-    public void setMaSanPham(String maSanPham) {
-        this.maSanPham = maSanPham;
+    public String getPhanHoi() {
+        return phanHoi;
+    }
+
+    public void setPhanHoi(String phanHoi) {
+        this.phanHoi = phanHoi;
+    }
+
+    public LocalDateTime getNgayPhanHoi() {
+        return ngayPhanHoi;
+    }
+
+    public void setNgayPhanHoi(LocalDateTime ngayPhanHoi) {
+        this.ngayPhanHoi = ngayPhanHoi;
     }
 }
