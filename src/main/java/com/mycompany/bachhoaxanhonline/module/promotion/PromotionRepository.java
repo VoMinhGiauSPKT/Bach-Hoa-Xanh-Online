@@ -257,7 +257,7 @@ public class PromotionRepository {
                     + "\"maKhuyenMai\", \"tenKhuyenMai\", \"moTa\", \"loaiKhuyenMai\", "
                     + "\"giaTriGiam\", \"giamToiDa\", \"donHangToiThieu\", \"soLuongDung\", "
                     + "\"ngayBatDau\", \"ngayKetThuc\", \"Deleted\") "
-                    + "VALUES (CAST(:code AS varchar), CAST(:name AS varchar), CAST(:desc AS text), CAST(:type AS varchar)::enum_loai_khuyenmai, "
+                    + "VALUES (CAST(:code AS varchar), CAST(:name AS varchar), CAST(:desc AS text), CAST(CAST(:type AS varchar) AS enum_loai_khuyenmai), "
                     + "CAST(:val AS numeric), CAST(:maxVal AS numeric), CAST(:minOrder AS numeric), CAST(:usage AS int), CAST(:start AS timestamp), CAST(:end AS timestamp), false)";
 
             Query query = em.createNativeQuery(sql);

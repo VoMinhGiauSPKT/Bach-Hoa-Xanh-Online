@@ -14,7 +14,7 @@ public class AppContextListener implements ServletContextListener {
             // Warm up EntityManagerFactory and HikariCP connection pool
             JpaUtil.getEntityManagerFactory();
             System.out.println(">>> JPA & HikariCP initialized successfully.");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             System.err.println(">>> Error initializing JPA at startup: " + e.getMessage());
             e.printStackTrace();
         }
