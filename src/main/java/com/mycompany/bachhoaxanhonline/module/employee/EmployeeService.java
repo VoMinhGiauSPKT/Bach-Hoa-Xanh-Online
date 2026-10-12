@@ -2,12 +2,12 @@ package com.mycompany.bachhoaxanhonline.module.employee;
 
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class EmployeeService {
 
@@ -63,7 +63,7 @@ public class EmployeeService {
 
         String hashedPassword = PasswordUtil.hash(request.getPassword());
 
-        String employeeId = UUID.randomUUID().toString();
+        String employeeId = CodeGeneratorUtil.generateNextCode("Auth", "maNguoiDung", "NV", 4);
 
         employeeRepository.createEmployee(
                 employeeId,

@@ -13,6 +13,7 @@ public class OrderResponse {
         private List<OrderSummary> items;
         private int totalPages;
         private int currentPage;
+        private long total;
 
         public List<OrderSummary> getItems() { return items; }
         public void setItems(List<OrderSummary> items) { this.items = items; }
@@ -20,6 +21,8 @@ public class OrderResponse {
         public void setTotalPages(int totalPages) { this.totalPages = totalPages; }
         public int getCurrentPage() { return currentPage; }
         public void setCurrentPage(int currentPage) { this.currentPage = currentPage; }
+        public long getTotal() { return total; }
+        public void setTotal(long total) { this.total = total; }
     }
 
     public static class OrderSummary {
@@ -29,6 +32,8 @@ public class OrderResponse {
         private LocalDateTime ngayLap;
 
         private BigDecimal tongTien;
+        private BigDecimal tienGiamGia;
+        private BigDecimal tongTienSauGiamGia;
         private String trangThai;
         private String phuongThucTT;
         private int soLuongMatHang;
@@ -39,6 +44,10 @@ public class OrderResponse {
         public void setNgayLap(LocalDateTime ngayLap) { this.ngayLap = ngayLap; }
         public BigDecimal getTongTien() { return tongTien; }
         public void setTongTien(BigDecimal tongTien) { this.tongTien = tongTien; }
+        public BigDecimal getTienGiamGia() { return tienGiamGia; }
+        public void setTienGiamGia(BigDecimal tienGiamGia) { this.tienGiamGia = tienGiamGia; }
+        public BigDecimal getTongTienSauGiamGia() { return tongTienSauGiamGia; }
+        public void setTongTienSauGiamGia(BigDecimal tongTienSauGiamGia) { this.tongTienSauGiamGia = tongTienSauGiamGia; }
         public String getTrangThai() { return trangThai; }
         public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
         public String getPhuongThucTT() { return phuongThucTT; }
@@ -55,6 +64,8 @@ public class OrderResponse {
         private LocalDateTime ngayLap;
 
         private BigDecimal tongTien;
+        private BigDecimal tienGiamGia;
+        private BigDecimal tongTienSauGiamGia;
         private String trangThai;
         private String phuongThucTT;
         private String tenNguoiNhan;
@@ -70,6 +81,10 @@ public class OrderResponse {
         public void setNgayLap(LocalDateTime ngayLap) { this.ngayLap = ngayLap; }
         public BigDecimal getTongTien() { return tongTien; }
         public void setTongTien(BigDecimal tongTien) { this.tongTien = tongTien; }
+        public BigDecimal getTienGiamGia() { return tienGiamGia; }
+        public void setTienGiamGia(BigDecimal tienGiamGia) { this.tienGiamGia = tienGiamGia; }
+        public BigDecimal getTongTienSauGiamGia() { return tongTienSauGiamGia; }
+        public void setTongTienSauGiamGia(BigDecimal tongTienSauGiamGia) { this.tongTienSauGiamGia = tongTienSauGiamGia; }
         public String getTrangThai() { return trangThai; }
         public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
         public String getPhuongThucTT() { return phuongThucTT; }

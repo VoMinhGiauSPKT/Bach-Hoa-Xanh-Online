@@ -2,6 +2,7 @@ package com.mycompany.bachhoaxanhonline.module.promotion;
 
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -75,10 +76,12 @@ public class PromotionService {
             String keyword, String type, Integer page, Integer limit) {
 
         int currentPage = (page != null && page >= 1) ? page : 1;
-        int currentLimit = (limit != null && limit >= 1) ? limit : 10;
+        int currentLimit = (limit != null && limit >= 1) ? limit : 20;
 
         if (type != null && !type.trim().isEmpty()) {
             String upperType = type.trim().toUpperCase();
+            if ("FIXED".equals(upperType)) upperType = "TIENMAT";
+            if ("PERCENT".equals(upperType) || "PERCENTAGE".equals(upperType)) upperType = "PHANTRAM";
             if (!"TIENMAT".equals(upperType) && !"PHANTRAM".equals(upperType)) {
                 throw new PromotionException(400, "Loại khuyến mãi không hợp lệ: phải là TIENMAT hoặc PHANTRAM.");
             }
@@ -97,9 +100,14 @@ public class PromotionService {
             throw new PromotionException(400, "Dữ liệu không hợp lệ.");
         }
 
-        if (req.getPromotionCode() == null || req.getPromotionCode().trim().isEmpty()) {
-            throw new PromotionException(400, "Mã khuyến mãi không được để trống.");
+        String code = req.getPromotionCode();
+        if (code != null && !code.trim().isEmpty()) {
+            code = code.trim().toUpperCase();
+        } else {
+            code = CodeGeneratorUtil.generateNextCode("Promotion", "maKhuyenMai", "KM", 4);
         }
+        req.setPromotionCode(code);
+
         if (req.getPromotionName() == null || req.getPromotionName().trim().isEmpty()) {
             throw new PromotionException(400, "Tên khuyến mãi không được để trống.");
         }
@@ -110,11 +118,9 @@ public class PromotionService {
             throw new PromotionException(400, "Giá trị giảm phải lớn hơn 0.");
         }
 
-        // Tự động chuyển promotionCode sang chữ in hoa không dấu
-        String code = req.getPromotionCode().trim().toUpperCase();
-        req.setPromotionCode(code);
-
         String type = req.getDiscountType().trim().toUpperCase();
+        if ("FIXED".equals(type)) type = "TIENMAT";
+        if ("PERCENT".equals(type) || "PERCENTAGE".equals(type)) type = "PHANTRAM";
         req.setDiscountType(type);
 
         if (!"TIENMAT".equals(type) && !"PHANTRAM".equals(type)) {

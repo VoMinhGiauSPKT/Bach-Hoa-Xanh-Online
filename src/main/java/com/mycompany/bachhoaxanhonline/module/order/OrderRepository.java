@@ -47,6 +47,42 @@ public class OrderRepository {
         }
     }
 
+    public long countAll() {
+        EntityManager em = JpaUtil.getEntityManager();
+        try {
+            return em.createQuery("SELECT COUNT(o) FROM Order o WHERE o.deleted = false", Long.class)
+                    .getSingleResult();
+        } catch (Exception e) {
+            try {
+                return em.createQuery("SELECT COUNT(o) FROM Order o", Long.class).getSingleResult();
+            } catch (Exception ex) {
+                return 0L;
+            }
+        } finally {
+            em.close();
+        }
+    }
+
+    public long countByCustomerId(String customerId) {
+        if (customerId == null) return 0L;
+        EntityManager em = JpaUtil.getEntityManager();
+        try {
+            return em.createQuery("SELECT COUNT(o) FROM Order o WHERE o.maKhachHang = :customerId AND o.deleted = false", Long.class)
+                    .setParameter("customerId", customerId)
+                    .getSingleResult();
+        } catch (Exception e) {
+            try {
+                return em.createQuery("SELECT COUNT(o) FROM Order o WHERE o.maKhachHang = :customerId", Long.class)
+                        .setParameter("customerId", customerId)
+                        .getSingleResult();
+            } catch (Exception ex) {
+                return 0L;
+            }
+        } finally {
+            em.close();
+        }
+    }
+
     public Order findById(String orderId) {
         if (orderId == null || orderId.trim().isEmpty()) return null;
         EntityManager em = JpaUtil.getEntityManager();
