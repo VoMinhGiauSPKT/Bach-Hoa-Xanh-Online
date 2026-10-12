@@ -1,6 +1,8 @@
-# BẢNG THIẾT KẾ CHI TIẾT API ROUTE (`/employee` & `/user`)
+# BẢNG THIẾT KẾ CHI TIẾT API ROUTE (`/employee`, `/user` & `/payment`)
 
-> **Mô tả:** Tài liệu đặc tả kỹ thuật chi tiết các API Route cho 2 router `/employee` và `/user` (hệ thống Bách Hóa Xanh Online).
+> **LƯU Ý:** Để xem tài liệu đặc tả đầy đủ toàn bộ 11 module dành cho Frontend (FE) tích hợp, vui lòng xem tại file: [API_DOCUMENTATION.md](file:///d:/ghichumonhoc/laptrinhweb/project/BachHoaXanhOnline/API_DOCUMENTATION.md).
+
+> **Mô tả:** Tài liệu đặc tả kỹ thuật chi tiết các API Route cho các router `/employee`, `/user` và `/payment` (hệ thống Bách Hóa Xanh Online).
 
 ---
 
@@ -15,6 +17,8 @@
 | **1.5** | `PATCH`| `/employee/:id` | Khóa hoặc kích hoạt lại tài khoản nhân viên | `AuthFilter`, `AdminRoleFilter` |
 | **2.1** | `GET` | `/user/profile` | Lấy thông tin chi tiết tài khoản đang đăng nhập | `AuthFilter` (Customer / Staff / Admin) |
 | **2.2** | `PUT` | `/user/change-password` | Người dùng tự đổi mật khẩu cá nhân | `AuthFilter` |
+| **3.1** | `POST` | `/payment/create/:orderId` | Tạo liên kết & Mã QR VietQR thanh toán PayOS | `AuthFilter` (Customer chính chủ / Staff / Admin) |
+| **3.2** | `POST` | `/payment/webhook` | Webhook PayOS xác nhận chuyển khoản tự động (IPN) | Public (PayOS Server Webhook) |
 
 ---
 
@@ -408,3 +412,102 @@
   - Kích hoạt gửi email bất đồng bộ (`nodemailer`) thông báo: *"Mật khẩu tài khoản Bách Hóa Xanh Online của bạn vừa được thay đổi thành công vào lúc [Thời gian]. Nếu không phải bạn thực hiện, vui lòng liên hệ ngay với chúng tôi để khóa tài khoản khẩn cấp."*
 
 - **Packages:** `jsonwebtoken`, `bcrypt`, `nodemailer`
+
+---
+
+## 3. ROUTER: `/payment` (Cổng thanh toán trực tuyến PayOS)
+
+### 3.1. Tạo liên kết & Mã QR thanh toán PayOS
+
+- **Endpoint:** `/payment/create/:orderId` *(Ví dụ: `/payment/create/DH000001`)*
+- **Mô tả:** Khởi tạo yêu cầu thanh toán với cổng PayOS, trả về liên kết checkout và chuỗi mã VietQR để khách hàng thanh toán chuyển khoản qua ứng dụng ngân hàng.
+- **Method:** `POST`
+
+#### Input:
+- **Path Param:** `orderId` (Mã đơn hàng, ví dụ: `DH000001`)
+- **Body:** `{}` (hoặc rỗng)
+
+#### Output (`res.body`):
+```json
+{
+  "status": 200,
+  "message": "Tạo liên kết thanh toán thành công",
+  "data": {
+    "orderId": "DH000001",
+    "orderCode": 1728518400123,
+    "checkoutUrl": "https://pay.payos.vn/web/f7e4...",
+    "qrCode": "00020101021238540010A0000007270124...",
+    "bin": "970422",
+    "accountNumber": "0381000...",
+    "accountName": "NGUYEN VAN A",
+    "amount": 250000,
+    "status": "PENDING"
+  }
+}
+```
+
+#### Middleware:
+- `AuthFilter` (Yêu cầu đăng nhập; Khách hàng sở hữu đơn hàng, hoặc Nhân viên / Admin)
+
+#### Errors (Unhappy path):
+- `400 Bad Request`: Mã đơn hàng không hợp lệ, đơn hàng đã được thanh toán hoặc đã bị hủy.
+- `401 Unauthorized`: Chưa đăng nhập hoặc token hết hạn.
+- `403 Forbidden`: Khách hàng khác cố tình thanh toán đơn hàng không thuộc sở hữu của mình.
+- `404 Not Found`: Không tìm thấy mã đơn hàng trong hệ thống.
+- `500 Internal Error`: Lỗi kết nối PayOS hoặc cấu hình API Key / Checksum không chính xác.
+
+#### Notes:
+- Tự động sinh `orderCode` số nguyên duy nhất (`System.currentTimeMillis()`) theo chuẩn của PayOS.
+- Tạo chuỗi chữ ký HMAC-SHA256 (`SignatureUtils`) từ dữ liệu `amount`, `cancelUrl`, `description`, `orderCode`, `returnUrl` với `PAYOS_CHECKSUM_KEY`.
+- Gửi HTTP POST tới `https://api-merchant.payos.vn/v2/payment-requests`.
+- Khi PayOS phản hồi thành công (`code == "00"`), lưu `orderCode` vào đơn hàng (`ghiChu`) và tạo bản ghi `Payment` với trạng thái `PENDING`.
+- Cung cấp chuỗi VietQR (`qrCode`) trực tiếp để Frontend render mã QR trên giao diện modal thanh toán tại chỗ mà không cần bắt buộc người dùng chuyển hướng sang trang khác.
+
+---
+
+### 3.2. Webhook PayOS xử lý thanh toán tự động (IPN)
+
+- **Endpoint:** `/payment/webhook`
+- **Mô tả:** Nhận tín hiệu IPN (Instant Payment Notification) từ máy chủ PayOS khi người dùng chuyển khoản thành công.
+- **Method:** `POST`
+
+#### Input (`req.body`):
+```json
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "orderCode": 1728518400123,
+    "amount": 250000,
+    "description": "Don hang DH000001",
+    "accountNumber": "0381000...",
+    "reference": "FT24...",
+    "transactionDateTime": "2026-10-10 00:00:00",
+    "paymentLinkId": "...",
+    "code": "00",
+    "desc": "success"
+  },
+  "signature": "3a18a994ef7e068b..."
+}
+```
+
+#### Output (`res.body`):
+```json
+{
+  "status": 200,
+  "message": "Xử lý webhook thanh toán thành công",
+  "data": null
+}
+```
+
+#### Middleware:
+- Public (Không yêu cầu JWT, được gọi từ máy chủ PayOS qua Internet)
+
+#### Errors (Unhappy path):
+- `400 Bad Request`: Dữ liệu webhook không hợp lệ, chữ ký `signature` không khớp với `PAYOS_CHECKSUM_KEY`, hoặc không tìm thấy đơn hàng tương ứng với `orderCode`.
+
+#### Notes:
+- Backend xác thực tính toàn vẹn của chữ ký `signature` bằng HMAC-SHA256 với `PAYOS_CHECKSUM_KEY` trước khi xử lý.
+- Khi chữ ký hợp lệ và `code == "00"`:
+  - Cập nhật bản ghi `Payment` sang trạng thái `SUCCESS` và lưu mã giao dịch tham chiếu `reference`.
+  - Cập nhật trạng thái đơn hàng `Order` sang `CONFIRMED` (Đã thanh toán).
