@@ -94,19 +94,22 @@ public class EmployeeRepository {
         }
     }
 
-    public void createEmployee(String employeeId, String fullName, String username, String phoneNumber,
+    public void createEmployee(String employeeId, String fullName, String username, String email, String phoneNumber,
             String hashedPassword, String position) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
 
+            String cleanEmail = (email != null && !email.trim().isEmpty()) ? email.trim() : null;
+
             em.createNativeQuery(
-                    "INSERT INTO \"NguoiDung\" (\"maNguoiDung\", \"tenND\", \"tenDangNhap\", \"soDienThoai\", \"matKhauHashed\", \"Deleted\") "
-                            + "VALUES (:id, :fullName, :username, :phone, :hash, false)")
+                    "INSERT INTO \"NguoiDung\" (\"maNguoiDung\", \"tenND\", \"tenDangNhap\", \"email\", \"soDienThoai\", \"matKhauHashed\", \"Deleted\") "
+                            + "VALUES (:id, :fullName, :username, :email, :phone, :hash, false)")
                     .setParameter("id", employeeId)
                     .setParameter("fullName", fullName)
                     .setParameter("username", username)
+                    .setParameter("email", cleanEmail)
                     .setParameter("phone", phoneNumber)
                     .setParameter("hash", hashedPassword)
                     .executeUpdate();
@@ -127,6 +130,11 @@ public class EmployeeRepository {
         } finally {
             em.close();
         }
+    }
+
+    public void createEmployee(String employeeId, String fullName, String username, String phoneNumber,
+            String hashedPassword, String position) {
+        createEmployee(employeeId, fullName, username, null, phoneNumber, hashedPassword, position);
     }
 
     public Optional<Employee> findById(String employeeId) {
@@ -152,14 +160,14 @@ public class EmployeeRepository {
 
             if (keyword != null && !keyword.trim().isEmpty()) {
                 jpql.append(
-                        " AND (LOWER(u.tenND) LIKE :kw OR LOWER(u.tenDangNhap) LIKE :kw OR u.soDienThoai LIKE :kw)");
+                        " AND (LOWER(e.maNhanVien) LIKE :kw OR LOWER(u.tenND) LIKE :kw OR LOWER(u.tenDangNhap) LIKE :kw OR LOWER(u.email) LIKE :kw OR u.soDienThoai LIKE :kw)");
             }
             if (position != null && !position.trim().isEmpty()) {
                 jpql.append(" AND e.chucVu = :pos");
             }
             if (status != null) {
                 if (status) {
-                    jpql.append(" AND e.deleted = false AND u.deleted = false");
+                    jpql.append(" AND COALESCE(e.deleted, false) = false AND COALESCE(u.deleted, false) = false");
                 } else {
                     jpql.append(" AND (e.deleted = true OR u.deleted = true)");
                 }
@@ -191,14 +199,14 @@ public class EmployeeRepository {
 
             if (keyword != null && !keyword.trim().isEmpty()) {
                 jpql.append(
-                        " AND (LOWER(u.tenND) LIKE :kw OR LOWER(u.tenDangNhap) LIKE :kw OR u.soDienThoai LIKE :kw)");
+                        " AND (LOWER(e.maNhanVien) LIKE :kw OR LOWER(u.tenND) LIKE :kw OR LOWER(u.tenDangNhap) LIKE :kw OR LOWER(u.email) LIKE :kw OR u.soDienThoai LIKE :kw)");
             }
             if (position != null && !position.trim().isEmpty()) {
                 jpql.append(" AND e.chucVu = :pos");
             }
             if (status != null) {
                 if (status) {
-                    jpql.append(" AND e.deleted = false AND u.deleted = false");
+                    jpql.append(" AND COALESCE(e.deleted, false) = false AND COALESCE(u.deleted, false) = false");
                 } else {
                     jpql.append(" AND (e.deleted = true OR u.deleted = true)");
                 }

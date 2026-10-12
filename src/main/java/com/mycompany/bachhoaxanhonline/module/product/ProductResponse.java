@@ -233,11 +233,20 @@ public class ProductResponse {
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate expiryDate;
 
+        private Double ratingAverage;
+        private Long totalReviews;
+
         public ProductItem() {
         }
 
         public ProductItem(String productId, String productName, String imageUrl, CategoryInfo category,
                            BigDecimal price, String unit, Integer stock, LocalDate expiryDate) {
+            this(productId, productName, imageUrl, category, price, unit, stock, expiryDate, 0.0, 0L);
+        }
+
+        public ProductItem(String productId, String productName, String imageUrl, CategoryInfo category,
+                           BigDecimal price, String unit, Integer stock, LocalDate expiryDate,
+                           Double ratingAverage, Long totalReviews) {
             this.productId = productId;
             this.productName = productName;
             this.imageUrl = imageUrl;
@@ -246,6 +255,8 @@ public class ProductResponse {
             this.unit = unit;
             this.stock = stock;
             this.expiryDate = expiryDate;
+            this.ratingAverage = ratingAverage;
+            this.totalReviews = totalReviews;
         }
 
         public String getProductId() {
@@ -310,6 +321,22 @@ public class ProductResponse {
 
         public void setExpiryDate(LocalDate expiryDate) {
             this.expiryDate = expiryDate;
+        }
+
+        public Double getRatingAverage() {
+            return ratingAverage;
+        }
+
+        public void setRatingAverage(Double ratingAverage) {
+            this.ratingAverage = ratingAverage;
+        }
+
+        public Long getTotalReviews() {
+            return totalReviews;
+        }
+
+        public void setTotalReviews(Long totalReviews) {
+            this.totalReviews = totalReviews;
         }
     }
 

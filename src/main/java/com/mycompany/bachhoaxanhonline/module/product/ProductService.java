@@ -6,6 +6,7 @@ import com.mycompany.bachhoaxanhonline.module.category.CategoryRepository;
 import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -101,8 +102,13 @@ public class ProductService {
         long total = productRepository.countProducts(cleanedKeyword, cleanedCategoryId, inStock);
         List<Product> products = productRepository.findProducts(page, limit, cleanedKeyword, cleanedCategoryId, sortBy, inStock);
 
+        List<String> productIds = products.stream()
+                .map(Product::getMaSanPham)
+                .collect(Collectors.toList());
+        Map<String, ProductRepository.RatingSummary> ratingMap = productRepository.getRatingSummaries(productIds);
+
         List<ProductResponse.ProductItem> productItems = products.stream()
-                .map(this::mapToProductItem)
+                .map(p -> mapToProductItem(p, ratingMap.get(p.getMaSanPham())))
                 .collect(Collectors.toList());
 
         ProductResponse.ProductListData listData = new ProductResponse.ProductListData(total, page, limit, productItems);
@@ -110,7 +116,7 @@ public class ProductService {
         return new ApiResponse<>(200, "Lấy danh sách sản phẩm thành công", listData);
     }
 
-    private ProductResponse.ProductItem mapToProductItem(Product p) {
+    private ProductResponse.ProductItem mapToProductItem(Product p, ProductRepository.RatingSummary rating) {
         ProductResponse.CategoryInfo categoryInfo = null;
         if (p.getCategory() != null) {
             categoryInfo = new ProductResponse.CategoryInfo(
@@ -121,6 +127,9 @@ public class ProductService {
             categoryInfo = new ProductResponse.CategoryInfo(p.getMaLoai(), null);
         }
 
+        Double ratingAvg = (rating != null && rating.getTotalReviews() > 0) ? rating.getRatingAverage() : 0.0;
+        Long totalReviews = (rating != null) ? rating.getTotalReviews() : 0L;
+
         return new ProductResponse.ProductItem(
                 p.getMaSanPham(),
                 p.getTenSanPham(),
@@ -129,7 +138,9 @@ public class ProductService {
                 p.getGiaBan(),
                 p.getDonViTinh(),
                 p.getSoLuong(),
-                p.getHanSuDung()
+                p.getHanSuDung(),
+                ratingAvg,
+                totalReviews
         );
     }
 
@@ -162,6 +173,8 @@ public class ProductService {
         );
 
         ProductRepository.RatingSummary rating = productRepository.getRatingSummary(p.getMaSanPham());
+        Double ratingAvg = (rating != null && rating.getTotalReviews() > 0) ? rating.getRatingAverage() : 0.0;
+        Long totalReviews = (rating != null) ? rating.getTotalReviews() : 0L;
 
         ProductResponse.ProductDetailData detailData = new ProductResponse.ProductDetailData(
                 p.getMaSanPham(),
@@ -175,8 +188,8 @@ public class ProductService {
                 p.getDonViTinh(),
                 p.getSoLuong(),
                 p.getHanSuDung(),
-                rating.getRatingAverage(),
-                rating.getTotalReviews()
+                ratingAvg,
+                totalReviews
         );
 
         return new ApiResponse<>(200, "Lấy chi tiết sản phẩm thành công", detailData);

@@ -76,6 +76,33 @@ public class ReviewRepository {
     }
 
     /**
+     * Đếm số đơn hàng đã thanh toán chứa sản phẩm này của khách hàng.
+     */
+    public long countPaidOrdersWithProduct(String customerId, String productId) {
+        if (customerId == null || productId == null) {
+            return 0;
+        }
+        EntityManager em = JpaUtil.getEntityManager();
+        try {
+            String sql = "SELECT COUNT(DISTINCT dh.\"maDonHang\") FROM \"DonHang\" dh "
+                    + "JOIN \"LineItem\" li ON dh.\"maDonHang\" = li.\"maDonHang\" "
+                    + "WHERE dh.\"maKhachHang\" = :customerId "
+                    + "  AND dh.\"trangThai\" = 'DATHANHTOAN' "
+                    + "  AND dh.\"Deleted\" = FALSE "
+                    + "  AND li.\"maSanPham\" = :productId "
+                    + "  AND li.\"Deleted\" = FALSE";
+
+            Number count = (Number) em.createNativeQuery(sql)
+                    .setParameter("customerId", customerId.trim())
+                    .setParameter("productId", productId.trim())
+                    .getSingleResult();
+            return count != null ? count.longValue() : 0;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
      * Kiểm tra khách hàng đã từng đánh giá sản phẩm này hay chưa.
      */
     public boolean hasReviewed(String customerId, String productId) {
@@ -96,16 +123,39 @@ public class ReviewRepository {
     }
 
     /**
-     * Lưu bài đánh giá mới vào CSDL.
+     * Lưu hoặc cập nhật bài đánh giá mới vào CSDL (tự động tái kích hoạt nếu bản ghi cũ đã bị xóa mềm, tránh lỗi Unique).
      */
     public Long createReview(Review review) {
+        return createOrUpdateReview(review);
+    }
+
+    public Long createOrUpdateReview(Review review) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            em.persist(review);
+            List<Review> list = em.createQuery(
+                    "SELECT r FROM Review r WHERE r.maKhachHang = :customerId AND r.maSanPham = :productId", Review.class)
+                    .setParameter("customerId", review.getMaKhachHang())
+                    .setParameter("productId", review.getMaSanPham())
+                    .getResultList();
+            Long resultId;
+            if (!list.isEmpty()) {
+                Review existing = list.get(0);
+                existing.setDeleted(false);
+                existing.setSoSao(review.getSoSao());
+                existing.setNoiDung(review.getNoiDung());
+                existing.setNgayDang(LocalDateTime.now());
+                existing.setPhanHoi(null);
+                existing.setNgayPhanHoi(null);
+                em.merge(existing);
+                resultId = existing.getMaDanhGia();
+            } else {
+                em.persist(review);
+                resultId = review.getMaDanhGia();
+            }
             tx.commit();
-            return review.getMaDanhGia();
+            return resultId;
         } catch (Exception e) {
             if (tx.isActive()) {
                 tx.rollback();

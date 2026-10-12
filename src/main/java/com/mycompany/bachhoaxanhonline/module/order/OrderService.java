@@ -7,6 +7,7 @@ import com.mycompany.bachhoaxanhonline.module.cart.CartResponse.LineItemData;
 import com.mycompany.bachhoaxanhonline.module.email.EmailService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.LockModeType;
 import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,17 +57,18 @@ public class OrderService {
                 throw new OrderException(400, "Giỏ hàng rỗng, không thể đặt hàng");
             }
 
-            // 2. Validate Stock and Deduct
+            // 2. Validate Stock and Deduct with Pessimistic Locking (chống overselling/âm kho khi nhiều người mua đồng thời)
             BigDecimal totalAmount = BigDecimal.ZERO;
             for (LineItem item : itemsToOrder) {
-                Product product = em.find(Product.class, item.getMaSanPham());
+                Product product = em.find(Product.class, item.getMaSanPham(), LockModeType.PESSIMISTIC_WRITE);
                 if (product == null || product.getDeleted()) {
                     throw new OrderException(404, "Sản phẩm " + item.getMaSanPham() + " không còn tồn tại");
                 }
                 if (product.getSoLuong() < item.getSoLuong()) {
                     throw new OrderException(409, "Sản phẩm " + product.getTenSanPham() + " không đủ số lượng tồn kho");
                 }
-                product.setSoLuong(product.getSoLuong() - item.getSoLuong());
+                int deductQty = (int) Math.ceil(item.getSoLuong());
+                product.setSoLuong(Math.max(0, product.getSoLuong() - (deductQty > 0 ? deductQty : 1)));
                 em.merge(product);
                 totalAmount = totalAmount.add(item.getThanhTien());
             }
@@ -257,14 +259,15 @@ public class OrderService {
             order.setTrangThai("DAHUY");
             em.merge(order);
 
-            // 2. Hoàn trả số lượng tồn kho sản phẩm
+            // 2. Hoàn trả số lượng tồn kho sản phẩm (dùng Pessimistic Locking để đảm bảo nhất quán)
             List<LineItem> lineItems = em.createQuery("SELECT l FROM LineItem l WHERE l.maDonHang = :orderId", LineItem.class)
                     .setParameter("orderId", orderId)
                     .getResultList();
             for (LineItem item : lineItems) {
-                Product p = em.find(Product.class, item.getMaSanPham());
+                Product p = em.find(Product.class, item.getMaSanPham(), LockModeType.PESSIMISTIC_WRITE);
                 if (p != null && p.getSoLuong() != null) {
-                    p.setSoLuong(p.getSoLuong() + item.getSoLuong());
+                    int restoreQty = (int) Math.ceil(item.getSoLuong());
+                    p.setSoLuong(p.getSoLuong() + (restoreQty > 0 ? restoreQty : 1));
                     em.merge(p);
                 }
             }
@@ -340,14 +343,23 @@ public class OrderService {
     }
 
     public ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit) {
+        return getOrders(customerId, role, page, limit, null, null);
+    }
+
+    public ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit, String status, String keyword) {
+        String cleanStatus = (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim()))
+                ? status.trim().toUpperCase() : null;
+        String cleanKeyword = (keyword != null && !keyword.trim().isEmpty())
+                ? keyword.trim() : null;
+
         List<Order> orders;
         long total;
         if ("CUSTOMER".equalsIgnoreCase(role)) {
-            orders = orderRepository.findByCustomerId(customerId, page, limit);
-            total = orderRepository.countByCustomerId(customerId);
+            orders = orderRepository.findByCustomerId(customerId, page, limit, cleanStatus, cleanKeyword);
+            total = orderRepository.countByCustomerId(customerId, cleanStatus, cleanKeyword);
         } else {
-            orders = orderRepository.findAll(page, limit);
-            total = orderRepository.countAll();
+            orders = orderRepository.findAll(page, limit, cleanStatus, cleanKeyword);
+            total = orderRepository.countAll(cleanStatus, cleanKeyword);
         }
 
         OrderResponse.OrderListData data = new OrderResponse.OrderListData();
@@ -366,6 +378,9 @@ public class OrderService {
             summary.setTrangThai(o.getTrangThai());
             summary.setPhuongThucTT(resolvePaymentMethod(o));
             summary.setMaKhuyenMai(o.getMaKhuyenMai());
+            summary.setTenNguoiNhan(o.getTenNguoiNhan());
+            summary.setSoDienThoaiNhan(o.getSoDienThoaiNhan());
+            summary.setDiaChiGiaoHang(o.getDiaChiGiaoHang());
             int itemCount = 0;
             try {
                 if (o.getLineItems() != null) {

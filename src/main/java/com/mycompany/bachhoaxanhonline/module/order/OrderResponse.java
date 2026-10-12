@@ -38,6 +38,9 @@ public class OrderResponse {
         private String phuongThucTT;
         private int soLuongMatHang;
         private String maKhuyenMai;
+        private String tenNguoiNhan;
+        private String soDienThoaiNhan;
+        private String diaChiGiaoHang;
 
         public String getMaDonHang() { return maDonHang; }
         public void setMaDonHang(String maDonHang) { this.maDonHang = maDonHang; }
@@ -57,6 +60,12 @@ public class OrderResponse {
         public void setSoLuongMatHang(int soLuongMatHang) { this.soLuongMatHang = soLuongMatHang; }
         public String getMaKhuyenMai() { return maKhuyenMai; }
         public void setMaKhuyenMai(String maKhuyenMai) { this.maKhuyenMai = maKhuyenMai; }
+        public String getTenNguoiNhan() { return tenNguoiNhan; }
+        public void setTenNguoiNhan(String tenNguoiNhan) { this.tenNguoiNhan = tenNguoiNhan; }
+        public String getSoDienThoaiNhan() { return soDienThoaiNhan; }
+        public void setSoDienThoaiNhan(String soDienThoaiNhan) { this.soDienThoaiNhan = soDienThoaiNhan; }
+        public String getDiaChiGiaoHang() { return diaChiGiaoHang; }
+        public void setDiaChiGiaoHang(String diaChiGiaoHang) { this.diaChiGiaoHang = diaChiGiaoHang; }
     }
 
     public static class OrderDetailData {

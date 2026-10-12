@@ -9,7 +9,9 @@ import jakarta.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ProductRepository {
@@ -21,13 +23,17 @@ public class ProductRepository {
                     "SELECT p FROM Product p LEFT JOIN FETCH p.category c WHERE p.deleted = false");
 
             if (keyword != null && !keyword.trim().isEmpty()) {
-                jpql.append(" AND LOWER(p.tenSanPham) LIKE :keyword");
+                jpql.append(" AND (LOWER(p.tenSanPham) LIKE :keyword OR LOWER(p.maSanPham) LIKE :keyword)");
             }
             if (categoryId != null && !categoryId.trim().isEmpty()) {
                 jpql.append(" AND p.maLoai = :categoryId");
             }
-            if (inStock != null && inStock) {
-                jpql.append(" AND p.soLuong > 0");
+            if (inStock != null) {
+                if (inStock) {
+                    jpql.append(" AND p.soLuong > 0");
+                } else {
+                    jpql.append(" AND p.soLuong <= 0");
+                }
             }
 
             if ("price_asc".equalsIgnoreCase(sortBy)) {
@@ -69,13 +75,17 @@ public class ProductRepository {
                     "SELECT COUNT(p) FROM Product p WHERE p.deleted = false");
 
             if (keyword != null && !keyword.trim().isEmpty()) {
-                jpql.append(" AND LOWER(p.tenSanPham) LIKE :keyword");
+                jpql.append(" AND (LOWER(p.tenSanPham) LIKE :keyword OR LOWER(p.maSanPham) LIKE :keyword)");
             }
             if (categoryId != null && !categoryId.trim().isEmpty()) {
                 jpql.append(" AND p.maLoai = :categoryId");
             }
-            if (inStock != null && inStock) {
-                jpql.append(" AND p.soLuong > 0");
+            if (inStock != null) {
+                if (inStock) {
+                    jpql.append(" AND p.soLuong > 0");
+                } else {
+                    jpql.append(" AND p.soLuong <= 0");
+                }
             }
 
             TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
@@ -326,6 +336,39 @@ public class ProductRepository {
             return new RatingSummary(0.0, 0L);
         } catch (Exception e) {
             return new RatingSummary(0.0, 0L);
+        } finally {
+            em.close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, RatingSummary> getRatingSummaries(List<String> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        EntityManager em = JpaUtil.getEntityManager();
+        try {
+            List<Object[]> rows = em.createNativeQuery(
+                    "SELECT \"maSanPham\", COALESCE(AVG(CAST(\"soSao\" AS double precision)), 0.0), COUNT(*) "
+                    + "FROM \"DanhGia\" WHERE \"maSanPham\" IN (:productIds) AND \"Deleted\" = false "
+                    + "GROUP BY \"maSanPham\"")
+                    .setParameter("productIds", productIds)
+                    .getResultList();
+
+            Map<String, RatingSummary> map = new HashMap<>();
+            for (Object[] r : rows) {
+                if (r != null && r.length >= 3 && r[0] != null) {
+                    String pid = r[0].toString();
+                    double avg = r[1] != null ? ((Number) r[1]).doubleValue() : 0.0;
+                    long count = r[2] != null ? ((Number) r[2]).longValue() : 0L;
+                    double roundedAvg = Math.round(avg * 10.0) / 10.0;
+                    map.put(pid, new RatingSummary(roundedAvg, count));
+                }
+            }
+            return map;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyMap();
         } finally {
             em.close();
         }

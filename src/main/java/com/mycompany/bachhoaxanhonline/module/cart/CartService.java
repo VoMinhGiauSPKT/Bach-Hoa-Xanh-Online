@@ -54,11 +54,10 @@ public class CartService {
             }
 
             itemDataList.add(itemData);
-            totalItems += item.getSoLuong();
         }
 
         data.setItems(itemDataList);
-        data.setTotalItems(totalItems);
+        data.setTotalItems(itemDataList.size());
 
         return new ApiResponse<>(200, "Lấy thông tin giỏ hàng thành công", data);
     }
@@ -95,14 +94,14 @@ public class CartService {
             if (product.getSoLuong() < existingItem.getSoLuong() + request.getQuantity()) {
                 throw new CartException(409, "Số lượng cộng dồn vượt quá tồn kho");
             }
-            existingItem.setSoLuong(existingItem.getSoLuong() + request.getQuantity());
-            existingItem.setThanhTien(product.getGiaBan().multiply(new BigDecimal(existingItem.getSoLuong())));
+            existingItem.setSoLuong(Math.round((existingItem.getSoLuong() + request.getQuantity()) * 10.0) / 10.0);
+            existingItem.setThanhTien(product.getGiaBan().multiply(BigDecimal.valueOf(existingItem.getSoLuong())));
         } else {
             LineItem newItem = new LineItem();
             newItem.setCart(cart);
             newItem.setMaSanPham(product.getMaSanPham());
             newItem.setSoLuong(request.getQuantity());
-            newItem.setThanhTien(product.getGiaBan().multiply(new BigDecimal(request.getQuantity())));
+            newItem.setThanhTien(product.getGiaBan().multiply(BigDecimal.valueOf(request.getQuantity())));
             cart.getLineItems().add(newItem);
             existingItem = newItem;
         }
@@ -153,8 +152,8 @@ public class CartService {
             throw new CartException(409, "Số lượng cập nhật vượt quá số lượng hàng tồn trong kho");
         }
 
-        targetItem.setSoLuong(request.getQuantity());
-        targetItem.setThanhTien(product.getGiaBan().multiply(new BigDecimal(request.getQuantity())));
+        targetItem.setSoLuong(Math.round(request.getQuantity() * 10.0) / 10.0);
+        targetItem.setThanhTien(product.getGiaBan().multiply(BigDecimal.valueOf(targetItem.getSoLuong())));
 
         recalculateCartTotal(cart);
         cartRepository.update(cart);

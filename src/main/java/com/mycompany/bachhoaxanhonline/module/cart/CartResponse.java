@@ -30,7 +30,7 @@ public class CartResponse {
         private String imageUrl;
         private String unit;
         private BigDecimal price;
-        private Integer quantity;
+        private Double quantity;
         private BigDecimal itemTotal;
         private Integer availableStock;
 
@@ -47,8 +47,8 @@ public class CartResponse {
         public void setUnit(String unit) { this.unit = unit; }
         public BigDecimal getPrice() { return price; }
         public void setPrice(BigDecimal price) { this.price = price; }
-        public Integer getQuantity() { return quantity; }
-        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public Double getQuantity() { return quantity; }
+        public void setQuantity(Double quantity) { this.quantity = quantity; }
         public BigDecimal getItemTotal() { return itemTotal; }
         public void setItemTotal(BigDecimal itemTotal) { this.itemTotal = itemTotal; }
         public Integer getAvailableStock() { return availableStock; }
@@ -59,7 +59,7 @@ public class CartResponse {
         private String cartId;
         private Long lineItemId;
         private String productId;
-        private Integer quantity;
+        private Double quantity;
         private BigDecimal itemTotal;
         private BigDecimal totalCartAmount;
 
@@ -70,8 +70,8 @@ public class CartResponse {
         public void setLineItemId(Long lineItemId) { this.lineItemId = lineItemId; }
         public String getProductId() { return productId; }
         public void setProductId(String productId) { this.productId = productId; }
-        public Integer getQuantity() { return quantity; }
-        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public Double getQuantity() { return quantity; }
+        public void setQuantity(Double quantity) { this.quantity = quantity; }
         public BigDecimal getItemTotal() { return itemTotal; }
         public void setItemTotal(BigDecimal itemTotal) { this.itemTotal = itemTotal; }
         public BigDecimal getTotalCartAmount() { return totalCartAmount; }
@@ -81,7 +81,7 @@ public class CartResponse {
     public static class UpdateItemData {
         private Long lineItemId;
         private String productId;
-        private Integer quantity;
+        private Double quantity;
         private BigDecimal itemTotal;
         private BigDecimal totalCartAmount;
 
@@ -89,8 +89,8 @@ public class CartResponse {
         public void setLineItemId(Long lineItemId) { this.lineItemId = lineItemId; }
         public String getProductId() { return productId; }
         public void setProductId(String productId) { this.productId = productId; }
-        public Integer getQuantity() { return quantity; }
-        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public Double getQuantity() { return quantity; }
+        public void setQuantity(Double quantity) { this.quantity = quantity; }
         public BigDecimal getItemTotal() { return itemTotal; }
         public void setItemTotal(BigDecimal itemTotal) { this.itemTotal = itemTotal; }
         public BigDecimal getTotalCartAmount() { return totalCartAmount; }

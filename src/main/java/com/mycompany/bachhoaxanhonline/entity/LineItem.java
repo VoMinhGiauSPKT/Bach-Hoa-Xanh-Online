@@ -26,7 +26,7 @@ public class LineItem implements Serializable {
     private String maDonHang;
 
     @Column(name = "\"soLuong\"", nullable = false)
-    private Integer soLuong;
+    private Double soLuong;
 
     @Column(name = "\"thanhTien\"", nullable = false)
     private BigDecimal thanhTien;
@@ -45,7 +45,7 @@ public class LineItem implements Serializable {
     public LineItem() {
     }
 
-    public LineItem(String maSanPham, Integer soLuong, BigDecimal thanhTien, Cart cart, String maDonHang) {
+    public LineItem(String maSanPham, Double soLuong, BigDecimal thanhTien, Cart cart, String maDonHang) {
         this.maSanPham = maSanPham;
         this.soLuong = soLuong;
         this.thanhTien = thanhTien;
@@ -77,11 +77,11 @@ public class LineItem implements Serializable {
         this.maDonHang = maDonHang;
     }
 
-    public Integer getSoLuong() {
+    public Double getSoLuong() {
         return soLuong;
     }
 
-    public void setSoLuong(Integer soLuong) {
+    public void setSoLuong(Double soLuong) {
         this.soLuong = soLuong;
     }
 

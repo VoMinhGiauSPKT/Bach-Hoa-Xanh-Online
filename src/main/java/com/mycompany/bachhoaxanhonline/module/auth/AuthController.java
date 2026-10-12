@@ -76,6 +76,20 @@ public class AuthController extends HttpServlet {
 
     private void handleRefresh(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String refreshToken = extractRefreshToken(req);
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            try {
+                String paramToken = req.getParameter("refreshToken");
+                if (paramToken != null && !paramToken.trim().isEmpty()) {
+                    refreshToken = paramToken.trim();
+                } else {
+                    java.util.Map<?, ?> body = JsonUtil.fromJson(req.getReader(), java.util.Map.class);
+                    if (body != null && body.get("refreshToken") != null) {
+                        refreshToken = body.get("refreshToken").toString().trim();
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
         ApiResponse<AuthResponse.TokenData> response = authService.refreshToken(refreshToken);
         JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
     }

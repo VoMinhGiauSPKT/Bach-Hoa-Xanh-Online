@@ -17,6 +17,8 @@ public class EmployeeRequest {
         private String fullName;
 
         @NotBlank(message = "Tên đăng nhập không được để trống")
+        @Size(min = 4, max = 20, message = "Tên đăng nhập phải từ 4-20 ký tự")
+        @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Tên đăng nhập không được chứa ký tự đặc biệt hoặc dấu tiếng Việt")
         private String username;
 
         @NotBlank(message = "Mật khẩu không được để trống")
@@ -26,6 +28,9 @@ public class EmployeeRequest {
         @NotBlank(message = "Số điện thoại không được để trống")
         @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Số điện thoại không đúng định dạng")
         private String phoneNumber;
+
+        @Email(message = "Email không đúng định dạng")
+        private String email;
 
         private String position = "STAFF";
 
@@ -38,6 +43,16 @@ public class EmployeeRequest {
             this.username = username;
             this.password = password;
             this.phoneNumber = phoneNumber;
+            this.position = position != null ? position : "STAFF";
+        }
+
+        public CreateEmployeeRequest(String fullName, String username, String password, String phoneNumber,
+                String email, String position) {
+            this.fullName = fullName;
+            this.username = username;
+            this.password = password;
+            this.phoneNumber = phoneNumber;
+            this.email = email;
             this.position = position != null ? position : "STAFF";
         }
 
@@ -71,6 +86,14 @@ public class EmployeeRequest {
 
         public void setPhoneNumber(String phoneNumber) {
             this.phoneNumber = phoneNumber;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public String getPosition() {

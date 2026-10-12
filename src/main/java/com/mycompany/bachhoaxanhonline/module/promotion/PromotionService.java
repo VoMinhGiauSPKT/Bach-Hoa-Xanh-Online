@@ -80,12 +80,16 @@ public class PromotionService {
 
         if (type != null && !type.trim().isEmpty()) {
             String upperType = type.trim().toUpperCase();
-            if ("FIXED".equals(upperType)) upperType = "TIENMAT";
-            if ("PERCENT".equals(upperType) || "PERCENTAGE".equals(upperType)) upperType = "PHANTRAM";
-            if (!"TIENMAT".equals(upperType) && !"PHANTRAM".equals(upperType)) {
-                throw new PromotionException(400, "Loại khuyến mãi không hợp lệ: phải là TIENMAT hoặc PHANTRAM.");
+            if ("ALL".equals(upperType) || "TATCA".equals(upperType)) {
+                type = null;
+            } else {
+                if ("FIXED".equals(upperType)) upperType = "TIENMAT";
+                if ("PERCENT".equals(upperType) || "PERCENTAGE".equals(upperType)) upperType = "PHANTRAM";
+                if (!"TIENMAT".equals(upperType) && !"PHANTRAM".equals(upperType)) {
+                    throw new PromotionException(400, "Loại khuyến mãi không hợp lệ: phải là TIENMAT hoặc PHANTRAM.");
+                }
+                type = upperType;
             }
-            type = upperType;
         }
 
         PromotionResponse.AdminPromotionsData data = promotionRepository.getAdminPromotions(keyword, type, currentPage, currentLimit);
@@ -134,12 +138,13 @@ public class PromotionService {
             }
         }
 
-        // Quy tắc: discountType là TIENMAT thì discountValue phải <= minOrderAmount
+        // Quy tắc: discountType là TIENMAT thì discountValue phải <= minOrderAmount và không có giảm tối đa
         double minOrder = req.getMinOrderAmount() != null ? req.getMinOrderAmount() : 0.0;
         if ("TIENMAT".equals(type)) {
             if (req.getDiscountValue() > minOrder) {
                 throw new PromotionException(400, "discountType là TIENMAT thì discountValue phải <= minOrderAmount.");
             }
+            req.setMaxDiscount(null);
         }
 
         // Kiểm tra ngày bắt đầu & ngày kết thúc
@@ -197,6 +202,9 @@ public class PromotionService {
         String name = (req != null && req.getPromotionName() != null) ? req.getPromotionName().trim() : null;
         String desc = (req != null && req.getDescription() != null) ? req.getDescription().trim() : null;
         Double maxDiscount = (req != null) ? req.getMaxDiscount() : null;
+        if ("TIENMAT".equalsIgnoreCase(existing.getLoaiKhuyenMai())) {
+            maxDiscount = null;
+        }
         Integer usage = (req != null) ? req.getRemainingUsage() : null;
         if (usage != null && usage < 0) {
             throw new PromotionException(400, "remainingUsage không được âm.");

@@ -85,12 +85,14 @@ public class ReviewService {
         }
 
         // Kiểm tra đã mua và thanh toán đơn hàng thành công chưa
-        if (!reviewRepository.hasPaidOrderWithProduct(customerId, request.getProductId())) {
+        long paidOrdersCount = reviewRepository.countPaidOrdersWithProduct(customerId, request.getProductId());
+        if (paidOrdersCount <= 0) {
             throw new ReviewException(403, "Khách hàng chưa mua sản phẩm này hoặc đơn hàng chưa hoàn tất thanh toán (trạng thái khác DATHANHTOAN)");
         }
 
-        // Kiểm tra đã đánh giá sản phẩm trước đó chưa
-        if (reviewRepository.hasReviewed(customerId, request.getProductId())) {
+        // Nếu chỉ mua đúng 1 lần VÀ đã có bài đánh giá đang hoạt động -> yêu cầu dùng tính năng sửa
+        // Nếu mua từ lần 2 trở lên hoặc bài cũ đã xóa -> cho phép gửi đánh giá cho lần mua mới
+        if (paidOrdersCount <= 1 && reviewRepository.hasReviewed(customerId, request.getProductId())) {
             throw new ReviewException(409, "Bạn đã đánh giá sản phẩm này trước đó rồi. Vui lòng dùng tính năng chỉnh sửa đánh giá.");
         }
 

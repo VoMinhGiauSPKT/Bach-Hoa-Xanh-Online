@@ -61,6 +61,12 @@ public class EmployeeService {
             throw new EmployeeException(409, "Số điện thoại đã tồn tại");
         }
 
+        String cleanEmail = (request.getEmail() != null && !request.getEmail().trim().isEmpty())
+                ? request.getEmail().trim() : null;
+        if (cleanEmail != null && employeeRepository.existsByEmail(cleanEmail)) {
+            throw new EmployeeException(409, "Email đã tồn tại trong hệ thống");
+        }
+
         String hashedPassword = PasswordUtil.hash(request.getPassword());
 
         String employeeId = CodeGeneratorUtil.generateNextCode("Auth", "maNguoiDung", "NV", 4);
@@ -69,6 +75,7 @@ public class EmployeeService {
                 employeeId,
                 request.getFullName(),
                 request.getUsername(),
+                cleanEmail,
                 request.getPhoneNumber(),
                 hashedPassword,
                 position);
@@ -77,6 +84,7 @@ public class EmployeeService {
                 employeeId,
                 request.getFullName(),
                 request.getUsername(),
+                cleanEmail,
                 request.getPhoneNumber(),
                 position,
                 true);

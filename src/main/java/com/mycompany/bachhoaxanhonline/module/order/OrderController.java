@@ -45,7 +45,10 @@ public class OrderController extends HttpServlet {
                     if (req.getParameter("limit") != null) limit = Integer.parseInt(req.getParameter("limit"));
                 } catch (NumberFormatException ignored) {}
 
-                ApiResponse<OrderResponse.OrderListData> response = orderService.getOrders(userId, role, page, limit);
+                String status = req.getParameter("status");
+                String keyword = req.getParameter("keyword");
+
+                ApiResponse<OrderResponse.OrderListData> response = orderService.getOrders(userId, role, page, limit, status, keyword);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             } else {
                 String orderId = extractIdFromPath(pathInfo);

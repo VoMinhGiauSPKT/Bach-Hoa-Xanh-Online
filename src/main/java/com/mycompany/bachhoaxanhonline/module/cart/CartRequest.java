@@ -5,7 +5,7 @@ public class CartRequest {
 
     public static class AddItemRequest {
         private String productId;
-        private Integer quantity;
+        private Double quantity;
 
         public String getProductId() {
             return productId;
@@ -15,23 +15,23 @@ public class CartRequest {
             this.productId = productId;
         }
 
-        public Integer getQuantity() {
+        public Double getQuantity() {
             return quantity;
         }
 
-        public void setQuantity(Integer quantity) {
+        public void setQuantity(Double quantity) {
             this.quantity = quantity;
         }
     }
 
     public static class UpdateItemRequest {
-        private Integer quantity;
+        private Double quantity;
 
-        public Integer getQuantity() {
+        public Double getQuantity() {
             return quantity;
         }
 
-        public void setQuantity(Integer quantity) {
+        public void setQuantity(Double quantity) {
             this.quantity = quantity;
         }
     }
