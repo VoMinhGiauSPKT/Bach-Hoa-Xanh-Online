@@ -129,27 +129,15 @@ public class UserService {
         String hashedNewPassword = PasswordUtil.hash(request.getNewPassword());
         userRepository.updatePasswordAndRevokeToken(userId.trim(), hashedNewPassword);
 
-        sendSecurityEmailAsync(user.getEmail(), user.getTenND());
-
-        return new ApiResponse<>(200, "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
-    }
-
-    // Gửi email cảnh báo bảo mật bất đồng bộ khi đổi mật khẩu thành công (mô phỏng)
-
-    private void sendSecurityEmailAsync(String recipientEmail, String recipientName) {
-        if (recipientEmail == null || recipientEmail.trim().isEmpty()) {
-            return;
+        // Gửi email cảnh báo bảo mật qua SMTP Gmail thực tế
+        if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+            System.out.println(">>> [UserService] Kích hoạt gửi email đổi mật khẩu tới: " + user.getEmail().trim());
+            com.mycompany.bachhoaxanhonline.module.email.EmailService.getInstance()
+                    .sendPasswordChangedEmail(user.getEmail().trim(), user.getTenND());
+        } else {
+            System.err.println(">>> [UserService] BỎ QUA GỬI EMAIL: Tài khoản (userId: " + userId + ") chưa có địa chỉ Email trong CSDL!");
         }
 
-        CompletableFuture.runAsync(() -> {
-            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
-            String message = String.format(
-                    "[SECURITY ALERT] Gửi tới: %s (%s)%n" +
-                            "Nội dung: Mật khẩu tài khoản Bách Hóa Xanh Online của bạn vừa được thay đổi thành công vào lúc %s.%n"
-                            +
-                            "Nếu không phải bạn thực hiện, vui lòng liên hệ ngay với chúng tôi để khóa tài khoản khẩn cấp.",
-                    recipientName, recipientEmail, time);
-            System.out.println(message);
-        });
+        return new ApiResponse<>(200, "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
     }
 }

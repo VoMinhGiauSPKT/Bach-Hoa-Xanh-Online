@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -146,7 +147,8 @@ public class ProductRepository {
 
     public int updateProductMetadata(String productId, String productName, String imageUrl,
                                      String categoryId, String supplierId, String unit,
-                                     LocalDate expiryDate, Integer stock) {
+                                     LocalDate expiryDate, Integer stock,
+                                     BigDecimal importPrice, BigDecimal sellingPrice, Double vat) {
         EntityManager em = JpaUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
@@ -163,6 +165,15 @@ public class ProductRepository {
             if (stock != null) {
                 jpql.append(", p.soLuong = :soLuong");
             }
+            if (importPrice != null) {
+                jpql.append(", p.giaNhap = :giaNhap");
+            }
+            if (sellingPrice != null) {
+                jpql.append(", p.giaBan = :giaBan");
+            }
+            if (vat != null) {
+                jpql.append(", p.phiVAT = :vat");
+            }
 
             jpql.append(" WHERE UPPER(TRIM(p.maSanPham)) = UPPER(TRIM(:productId)) AND p.deleted = false");
 
@@ -177,6 +188,15 @@ public class ProductRepository {
 
             if (stock != null) {
                 query.setParameter("soLuong", stock);
+            }
+            if (importPrice != null) {
+                query.setParameter("giaNhap", importPrice);
+            }
+            if (sellingPrice != null) {
+                query.setParameter("giaBan", sellingPrice);
+            }
+            if (vat != null) {
+                query.setParameter("vat", vat);
             }
 
             int updated = query.executeUpdate();
@@ -193,6 +213,12 @@ public class ProductRepository {
         } finally {
             em.close();
         }
+    }
+
+    public int updateProductMetadata(String productId, String productName, String imageUrl,
+                                     String categoryId, String supplierId, String unit,
+                                     LocalDate expiryDate, Integer stock) {
+        return updateProductMetadata(productId, productName, imageUrl, categoryId, supplierId, unit, expiryDate, stock, null, null, null);
     }
 
     public int updateProductMetadata(String productId, String productName, String imageUrl,

@@ -170,6 +170,7 @@ public class ProductService {
                 categoryInfo,
                 supplierInfo,
                 p.getGiaBan(),
+                p.getGiaNhap(),
                 p.getPhiVAT(),
                 p.getDonViTinh(),
                 p.getSoLuong(),
@@ -313,7 +314,10 @@ public class ProductService {
                 request.getSupplierId().trim(),
                 unit,
                 request.getExpiryDate(),
-                stock
+                stock,
+                request.getImportPrice(),
+                request.getSellingPrice(),
+                request.getVat()
         );
 
         ProductResponse.UpdateProductData data = new ProductResponse.UpdateProductData(

@@ -121,16 +121,45 @@ public class OrderController extends HttpServlet {
         }
 
         String role = JwtUtil.getRoleFromToken(token);
-        if (!"STAFF".equalsIgnoreCase(role) && !"ADMIN".equalsIgnoreCase(role)) {
-            sendError(resp, 403, "Chỉ nhân viên hoặc quản trị viên mới có quyền xác nhận thanh toán");
-            return;
-        }
-
+        String userId = JwtUtil.getUserIdFromToken(token);
         String pathInfo = req.getPathInfo();
+
         if (pathInfo != null && pathInfo.endsWith("/confirm-cod")) {
-            String orderId = pathInfo.replace("/confirm-cod", "").replace("/", "");
+            if (!"STAFF".equalsIgnoreCase(role) && !"ADMIN".equalsIgnoreCase(role)) {
+                sendError(resp, 403, "Chỉ nhân viên hoặc quản trị viên mới có quyền xác nhận thanh toán");
+                return;
+            }
+            String orderId = pathInfo.replace("/confirm-cod", "").replace("/", "").trim();
             try {
                 ApiResponse<OrderResponse.OrderDetailData> response = orderService.confirmCod(orderId);
+                JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+            } catch (OrderService.OrderException e) {
+                sendError(resp, e.getStatusCode(), e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendError(resp, 500, "Lỗi hệ thống: " + e.getMessage());
+            }
+        } else if (pathInfo != null && pathInfo.endsWith("/cancel")) {
+            if (!"STAFF".equalsIgnoreCase(role) && !"ADMIN".equalsIgnoreCase(role)) {
+                sendError(resp, 403, "Chỉ nhân viên hoặc quản trị viên mới có quyền hủy đơn hàng");
+                return;
+            }
+            String orderId = pathInfo.replace("/cancel", "").replace("/", "").trim();
+            try {
+                ApiResponse<OrderResponse.OrderDetailData> response = orderService.cancelOrder(orderId, role);
+                JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+            } catch (OrderService.OrderException e) {
+                sendError(resp, e.getStatusCode(), e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendError(resp, 500, "Lỗi hệ thống: " + e.getMessage());
+            }
+        } else if (pathInfo != null && pathInfo.endsWith("/change-payment-method")) {
+            String orderId = pathInfo.replace("/change-payment-method", "").replace("/", "").trim();
+            try {
+                OrderRequest.ChangePaymentMethodRequest reqBody = JsonUtil.fromJson(req.getReader(), OrderRequest.ChangePaymentMethodRequest.class);
+                String newMethod = reqBody != null ? reqBody.getPaymentMethod() : "COD";
+                ApiResponse<OrderResponse.OrderDetailData> response = orderService.changePaymentMethod(orderId, newMethod, userId, role);
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             } catch (OrderService.OrderException e) {
                 sendError(resp, e.getStatusCode(), e.getMessage());

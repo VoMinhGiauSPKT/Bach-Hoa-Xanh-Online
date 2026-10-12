@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import com.mycompany.bachhoaxanhonline.config.PayOSConfig;
+import com.mycompany.bachhoaxanhonline.entity.Auth;
+import com.mycompany.bachhoaxanhonline.entity.LineItem;
 import com.mycompany.bachhoaxanhonline.entity.Order;
 import com.mycompany.bachhoaxanhonline.entity.Payment;
+import com.mycompany.bachhoaxanhonline.module.email.EmailService;
 import com.mycompany.bachhoaxanhonline.util.ConfigUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -21,6 +24,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PaymentService {
 
@@ -244,9 +248,30 @@ public class PaymentService {
                             payment.setDeleted(false);
                             em.persist(payment);
                         }
-                    }
 
-                    tx.commit();
+                        // Lấy thông tin khách hàng và danh sách sản phẩm để gửi email
+                        Auth customerAuth = em.find(Auth.class, order.getMaKhachHang());
+                        String customerEmail = customerAuth != null ? customerAuth.getEmail() : null;
+                        String customerName = customerAuth != null ? customerAuth.getTenND() : order.getTenNguoiNhan();
+
+                        List<LineItem> lineItems = em.createQuery(
+                                "SELECT l FROM LineItem l LEFT JOIN FETCH l.product WHERE l.maDonHang = :maDonHang AND (l.deleted IS NULL OR l.deleted = false)",
+                                LineItem.class)
+                                .setParameter("maDonHang", order.getMaDonHang())
+                                .getResultList();
+
+                        tx.commit();
+
+                        // Gửi email xác nhận thanh toán chuyển khoản thành công bất đồng bộ
+                        if (customerEmail != null && !customerEmail.trim().isEmpty()) {
+                            System.out.println(">>> [PaymentService] Kích hoạt gửi email thanh toán trực tuyến tới: " + customerEmail.trim());
+                            EmailService.getInstance().sendOnlinePaymentSuccessEmail(customerEmail.trim(), customerName, order, lineItems);
+                        } else {
+                            System.err.println(">>> [PaymentService] BỎ QUA GỬI EMAIL: Khách hàng đơn hàng #" + order.getMaDonHang() + " chưa có Email trong CSDL!");
+                        }
+                    } else {
+                        tx.commit();
+                    }
                 } catch (Exception e) {
                     if (tx.isActive()) tx.rollback();
                     e.printStackTrace();

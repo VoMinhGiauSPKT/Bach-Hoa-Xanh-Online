@@ -4,6 +4,7 @@ import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import com.mycompany.bachhoaxanhonline.module.cart.CartResponse.LineItemData;
+import com.mycompany.bachhoaxanhonline.module.email.EmailService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
@@ -142,6 +143,7 @@ public class OrderService {
             order.setNgayHetHanThanhToan(LocalDateTime.now().plusDays(3));
             order.setTienGiamGia(discountAmount);
             order.setTongTienSauGiamGia(totalAmount.subtract(discountAmount));
+            order.setMaKhuyenMai(promoCode);
             String pMethod = request.getPhuongThucTT();
             if (pMethod == null || pMethod.trim().isEmpty()) {
                 pMethod = request.getGhiChu();
@@ -200,7 +202,26 @@ public class OrderService {
             payment.setNgayThanhToan(LocalDateTime.now());
             em.persist(payment);
 
+            // Lấy thông tin khách hàng và danh sách sản phẩm để gửi email
+            Auth customerAuth = em.find(Auth.class, order.getMaKhachHang());
+            String customerEmail = customerAuth != null ? customerAuth.getEmail() : null;
+            String customerName = customerAuth != null ? customerAuth.getTenND() : order.getTenNguoiNhan();
+
+            List<LineItem> lineItems = em.createQuery(
+                    "SELECT l FROM LineItem l LEFT JOIN FETCH l.product WHERE l.maDonHang = :maDonHang AND (l.deleted IS NULL OR l.deleted = false)",
+                    LineItem.class)
+                    .setParameter("maDonHang", order.getMaDonHang())
+                    .getResultList();
+
             tx.commit();
+
+            // Gửi email xác nhận thu tiền mặt (COD) thành công bất đồng bộ
+            if (customerEmail != null && !customerEmail.trim().isEmpty()) {
+                System.out.println(">>> [OrderService] Kích hoạt gửi email COD tới: " + customerEmail.trim());
+                EmailService.getInstance().sendCodPaymentSuccessEmail(customerEmail.trim(), customerName, order, lineItems);
+            } else {
+                System.err.println(">>> [OrderService] BỎ QUA GỬI EMAIL COD: Khách hàng đơn hàng #" + orderId + " chưa có Email trong CSDL!");
+            }
         } catch (OrderException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
@@ -212,6 +233,110 @@ public class OrderService {
         }
 
         return getOrderDetail(orderId, null, "STAFF");
+    }
+
+    public ApiResponse<OrderResponse.OrderDetailData> cancelOrder(String orderId, String role) {
+        EntityManager em = JpaUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Order order = em.find(Order.class, orderId);
+            if (order == null || Boolean.TRUE.equals(order.getDeleted())) {
+                throw new OrderException(404, "Không tìm thấy đơn hàng");
+            }
+
+            if ("DATHANHTOAN".equalsIgnoreCase(order.getTrangThai())) {
+                throw new OrderException(400, "Đơn hàng đã thanh toán thành công, không thể hủy");
+            }
+
+            if ("DAHUY".equalsIgnoreCase(order.getTrangThai())) {
+                throw new OrderException(400, "Đơn hàng này đã bị hủy trước đó");
+            }
+
+            // 1. Chuyển trạng thái đơn sang DAHUY
+            order.setTrangThai("DAHUY");
+            em.merge(order);
+
+            // 2. Hoàn trả số lượng tồn kho sản phẩm
+            List<LineItem> lineItems = em.createQuery("SELECT l FROM LineItem l WHERE l.maDonHang = :orderId", LineItem.class)
+                    .setParameter("orderId", orderId)
+                    .getResultList();
+            for (LineItem item : lineItems) {
+                Product p = em.find(Product.class, item.getMaSanPham());
+                if (p != null && p.getSoLuong() != null) {
+                    p.setSoLuong(p.getSoLuong() + item.getSoLuong());
+                    em.merge(p);
+                }
+            }
+
+            // 3. Hoàn trả lượt dùng voucher nếu có áp dụng
+            if (order.getMaKhuyenMai() != null && !order.getMaKhuyenMai().trim().isEmpty()) {
+                em.createNativeQuery("UPDATE \"KhuyenMai\" SET \"soLuongDung\" = \"soLuongDung\" + 1 WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:pCode))")
+                        .setParameter("pCode", order.getMaKhuyenMai())
+                        .executeUpdate();
+            }
+
+            // 4. Hủy các thanh toán đang chờ xử lý
+            em.createQuery("UPDATE Payment p SET p.trangThai = 'THATBAI' WHERE p.order.maDonHang = :orderId AND p.trangThai = 'DANGXULY'")
+                    .setParameter("orderId", orderId)
+                    .executeUpdate();
+
+            tx.commit();
+        } catch (OrderException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw new OrderException(500, "Lỗi khi hủy đơn hàng: " + e.getMessage());
+        } finally {
+            em.close();
+        }
+
+        return getOrderDetail(orderId, null, role);
+    }
+
+    public ApiResponse<OrderResponse.OrderDetailData> changePaymentMethod(String orderId, String newMethod, String customerId, String role) {
+        EntityManager em = JpaUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Order order = em.find(Order.class, orderId);
+            if (order == null || Boolean.TRUE.equals(order.getDeleted())) {
+                throw new OrderException(404, "Không tìm thấy đơn hàng");
+            }
+
+            if ("CUSTOMER".equalsIgnoreCase(role) && !order.getMaKhachHang().equals(customerId)) {
+                throw new OrderException(403, "Bạn không có quyền chỉnh sửa đơn hàng này");
+            }
+
+            if ("DAHUY".equalsIgnoreCase(order.getTrangThai())) {
+                throw new OrderException(400, "Đơn hàng đã bị hủy, không thể thanh toán lại");
+            }
+
+            if ("DATHANHTOAN".equalsIgnoreCase(order.getTrangThai())) {
+                throw new OrderException(400, "Đơn hàng đã thanh toán thành công, không thể thay đổi phương thức");
+            }
+
+            String method = (newMethod != null) ? newMethod.trim().toUpperCase() : "COD";
+            if (!"COD".equals(method) && !"VIETQR".equals(method) && !"PAYOS".equals(method)) {
+                throw new OrderException(400, "Phương thức thanh toán không hợp lệ (hỗ trợ COD hoặc VIETQR)");
+            }
+
+            order.setGhiChu(method);
+            em.merge(order);
+
+            tx.commit();
+        } catch (OrderException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw new OrderException(500, "Lỗi khi đổi phương thức thanh toán: " + e.getMessage());
+        } finally {
+            em.close();
+        }
+
+        return getOrderDetail(orderId, customerId, role);
     }
 
     public ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit) {
@@ -240,6 +365,7 @@ public class OrderService {
             summary.setTongTienSauGiamGia(o.getTongTienSauGiamGia() != null ? o.getTongTienSauGiamGia() : o.getTongTien());
             summary.setTrangThai(o.getTrangThai());
             summary.setPhuongThucTT(resolvePaymentMethod(o));
+            summary.setMaKhuyenMai(o.getMaKhuyenMai());
             int itemCount = 0;
             try {
                 if (o.getLineItems() != null) {
@@ -297,6 +423,7 @@ public class OrderService {
             data.setTenNguoiNhan(order.getTenNguoiNhan());
             data.setSoDienThoaiNhan(order.getSoDienThoaiNhan());
             data.setDiaChiGiaoHang(order.getDiaChiGiaoHang());
+            data.setMaKhuyenMai(order.getMaKhuyenMai());
 
             List<LineItemData> itemDataList = new ArrayList<>();
             List<LineItem> lineItems = em.createQuery("SELECT l FROM LineItem l WHERE l.maDonHang = :orderId", LineItem.class)

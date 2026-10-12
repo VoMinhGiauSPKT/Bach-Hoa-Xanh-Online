@@ -36,7 +36,7 @@ public class CategoryService {
     public ApiResponse<List<CategoryResponse.CategoryPublicItem>> getPublicCategories() {
         List<Category> categories = categoryRepository.findAll(true);
         List<CategoryResponse.CategoryPublicItem> items = categories.stream()
-                .map(c -> new CategoryResponse.CategoryPublicItem(c.getMaLoaiSanPham(), c.getTenLoaiSanPham()))
+                .map(c -> new CategoryResponse.CategoryPublicItem(c.getMaLoaiSanPham(), c.getTenLoaiSanPham(), c.getPhanTramLoiNhuan()))
                 .collect(Collectors.toList());
 
         return new ApiResponse<>(200, "Lấy danh sách loại sản phẩm thành công", items);

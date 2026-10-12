@@ -208,6 +208,9 @@ public class ProductRequest {
         private String supplierId;
         private String unit;
         private Integer quantity;
+        private BigDecimal importPrice;
+        private BigDecimal sellingPrice;
+        private Double vat;
 
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate expiryDate;
@@ -287,6 +290,30 @@ public class ProductRequest {
 
         public void setStock(Integer stock) {
             this.quantity = stock;
+        }
+
+        public BigDecimal getImportPrice() {
+            return importPrice;
+        }
+
+        public void setImportPrice(BigDecimal importPrice) {
+            this.importPrice = importPrice;
+        }
+
+        public BigDecimal getSellingPrice() {
+            return sellingPrice;
+        }
+
+        public void setSellingPrice(BigDecimal sellingPrice) {
+            this.sellingPrice = sellingPrice;
+        }
+
+        public Double getVat() {
+            return vat;
+        }
+
+        public void setVat(Double vat) {
+            this.vat = vat;
         }
     }
 }

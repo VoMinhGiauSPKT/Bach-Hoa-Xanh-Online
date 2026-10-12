@@ -124,6 +124,7 @@ public class PromotionResponse {
     public static class AdminPromotionItem {
         private String promotionCode;
         private String promotionName;
+        private String description;
         private String discountType;
         private double discountValue;
         private Double maxDiscount;
@@ -240,6 +241,14 @@ public class PromotionResponse {
 
         public void setStatus(String status) {
             this.status = status;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 

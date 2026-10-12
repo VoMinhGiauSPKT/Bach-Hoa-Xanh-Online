@@ -20,6 +20,7 @@
         <class>com.mycompany.bachhoaxanhonline.entity.LineItem</class>
         <class>com.mycompany.bachhoaxanhonline.entity.Order</class>
         <class>com.mycompany.bachhoaxanhonline.entity.Payment</class>
+        <class>com.mycompany.bachhoaxanhonline.entity.Supplier</class>
 
         <properties>
             <!-- JDBC Connection Settings (Dynamically configured via JpaUtil from .env / System.getenv, with Neon fallback) -->

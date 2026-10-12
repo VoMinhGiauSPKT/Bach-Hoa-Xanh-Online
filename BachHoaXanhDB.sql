@@ -3,7 +3,7 @@
 -- ---------------------------------------------------------------------
 -- TẠO CÁC KIỂU ENUM DỮ LIỆU
 -- ---------------------------------------------------------------------
-CREATE TYPE enum_donhang_trangthai AS ENUM ('CHUATHANHTOAN', 'DATHANHTOAN');
+CREATE TYPE enum_donhang_trangthai AS ENUM ('CHUATHANHTOAN', 'DATHANHTOAN', 'DAHUY');
 CREATE TYPE enum_thanhtoan_trangthai AS ENUM ('THANHCONG', 'DANGXULY', 'THATBAI');
 CREATE TYPE enum_loai_khuyenmai AS ENUM ('TIENMAT', 'PHANTRAM');
 CREATE TYPE enum_chucvu_nhanvien AS ENUM ('ADMIN', 'STAFF');
@@ -160,6 +160,7 @@ CREATE TABLE DonHang (
     tongTien NUMERIC(14, 2) NOT NULL DEFAULT 0.00 CHECK (tongTien >= 0),
     tienGiamGia NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (tienGiamGia >= 0),
     tongTienSauGiamGia NUMERIC(14, 2) NOT NULL DEFAULT 0.00 CHECK (tongTienSauGiamGia >= 0),
+    maKhuyenMai VARCHAR(50) NULL,
     Deleted BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_donhang_khachhang FOREIGN KEY (maKhachHang) 
         REFERENCES KhachHang(maKhachHang),

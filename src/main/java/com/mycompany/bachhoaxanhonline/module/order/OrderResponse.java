@@ -37,6 +37,7 @@ public class OrderResponse {
         private String trangThai;
         private String phuongThucTT;
         private int soLuongMatHang;
+        private String maKhuyenMai;
 
         public String getMaDonHang() { return maDonHang; }
         public void setMaDonHang(String maDonHang) { this.maDonHang = maDonHang; }
@@ -54,6 +55,8 @@ public class OrderResponse {
         public void setPhuongThucTT(String phuongThucTT) { this.phuongThucTT = phuongThucTT; }
         public int getSoLuongMatHang() { return soLuongMatHang; }
         public void setSoLuongMatHang(int soLuongMatHang) { this.soLuongMatHang = soLuongMatHang; }
+        public String getMaKhuyenMai() { return maKhuyenMai; }
+        public void setMaKhuyenMai(String maKhuyenMai) { this.maKhuyenMai = maKhuyenMai; }
     }
 
     public static class OrderDetailData {
@@ -71,6 +74,7 @@ public class OrderResponse {
         private String tenNguoiNhan;
         private String soDienThoaiNhan;
         private String diaChiGiaoHang;
+        private String maKhuyenMai;
         private List<LineItemData> items;
 
         public String getMaDonHang() { return maDonHang; }
@@ -95,6 +99,8 @@ public class OrderResponse {
         public void setSoDienThoaiNhan(String soDienThoaiNhan) { this.soDienThoaiNhan = soDienThoaiNhan; }
         public String getDiaChiGiaoHang() { return diaChiGiaoHang; }
         public void setDiaChiGiaoHang(String diaChiGiaoHang) { this.diaChiGiaoHang = diaChiGiaoHang; }
+        public String getMaKhuyenMai() { return maKhuyenMai; }
+        public void setMaKhuyenMai(String maKhuyenMai) { this.maKhuyenMai = maKhuyenMai; }
         public List<LineItemData> getItems() { return items; }
         public void setItems(List<LineItemData> items) { this.items = items; }
     }

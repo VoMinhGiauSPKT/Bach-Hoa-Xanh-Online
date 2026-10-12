@@ -57,6 +57,9 @@ public class Order implements Serializable {
     @Column(name = "\"ghiChu\"", length = 1000)
     private String ghiChu;
 
+    @Column(name = "\"maKhuyenMai\"", length = 50)
+    private String maKhuyenMai;
+
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"maDonHang\"", referencedColumnName = "\"maDonHang\"", insertable = false, updatable = false)
     private List<LineItem> lineItems = new ArrayList<>();
@@ -174,5 +177,13 @@ public class Order implements Serializable {
 
     public void setTienGiamGia(BigDecimal tienGiamGia) {
         this.tienGiamGia = tienGiamGia;
+    }
+
+    public String getMaKhuyenMai() {
+        return maKhuyenMai;
+    }
+
+    public void setMaKhuyenMai(String maKhuyenMai) {
+        this.maKhuyenMai = maKhuyenMai;
     }
 }

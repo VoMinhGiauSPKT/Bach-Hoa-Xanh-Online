@@ -83,6 +83,11 @@ public class PromotionController extends HttpServlet {
 
                 ApiResponse<?> result = promotionService.getAdminPromotions(keyword, type, page, limit);
                 JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
+            } else if (pathInfo.startsWith("/")) {
+                // 3. GET /promotion/:code (Chi tiết khuyến mãi)
+                String code = pathInfo.substring(1).trim();
+                ApiResponse<?> result = promotionService.getPromotionDetail(code);
+                JsonUtil.sendJsonResponse(resp, result.getStatus(), result);
             } else {
                 JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
                         new ApiResponse<>(HttpServletResponse.SC_NOT_FOUND, "Endpoint không tồn tại: /promotion" + pathInfo));

@@ -9,6 +9,7 @@ public class CategoryResponse {
     public static class CategoryPublicItem {
         private String categoryId;
         private String categoryName;
+        private Double profitMargin;
 
         public CategoryPublicItem() {
         }
@@ -16,6 +17,12 @@ public class CategoryResponse {
         public CategoryPublicItem(String categoryId, String categoryName) {
             this.categoryId = categoryId;
             this.categoryName = categoryName;
+        }
+
+        public CategoryPublicItem(String categoryId, String categoryName, Double profitMargin) {
+            this.categoryId = categoryId;
+            this.categoryName = categoryName;
+            this.profitMargin = profitMargin;
         }
 
         public String getCategoryId() {
@@ -32,6 +39,14 @@ public class CategoryResponse {
 
         public void setCategoryName(String categoryName) {
             this.categoryName = categoryName;
+        }
+
+        public Double getProfitMargin() {
+            return profitMargin;
+        }
+
+        public void setProfitMargin(Double profitMargin) {
+            this.profitMargin = profitMargin;
         }
     }
 

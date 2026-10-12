@@ -155,6 +155,10 @@ public class JwtAuthFilter implements Filter {
             if (path.equals("/category") || path.equals("/category/")) {
                 return true;
             }
+            // Nhà cung cấp công khai: GET /supplier, GET /supplier/*
+            if (path.equals("/supplier") || path.startsWith("/supplier/")) {
+                return true;
+            }
             // Danh sách & chi tiết sản phẩm công khai: GET /product, GET /product/*
             if (path.equals("/product") || path.startsWith("/product/")) {
                 return true;
@@ -203,9 +207,10 @@ public class JwtAuthFilter implements Filter {
             return "ADMIN".equalsIgnoreCase(role);
         }
 
-        // Quản lý sản phẩm và danh mục (POST, PUT, DELETE): Chỉ ADMIN và STAFF
+        // Quản lý sản phẩm, danh mục và nhà cung cấp (POST, PUT, DELETE): Chỉ ADMIN và STAFF
         if ((path.equals("/product") || path.startsWith("/product/")
-                || path.equals("/category") || path.startsWith("/category/"))
+                || path.equals("/category") || path.startsWith("/category/")
+                || path.equals("/supplier") || path.startsWith("/supplier/"))
                 && ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method))) {
             if ("DELETE".equalsIgnoreCase(method) && (path.equals("/category") || path.startsWith("/category/"))) {
                 return "ADMIN".equalsIgnoreCase(role);

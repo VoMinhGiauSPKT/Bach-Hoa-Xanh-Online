@@ -230,4 +230,46 @@ public class PromotionService {
         promotionRepository.deletePromotion(code);
         return new ApiResponse<>(200, "Xóa mã khuyến mãi thành công");
     }
+
+    /**
+     * 6. Lấy chi tiết khuyến mãi (GET /promotion/:code)
+     */
+    public ApiResponse<PromotionResponse.AdminPromotionItem> getPromotionDetail(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            throw new PromotionException(400, "Mã khuyến mãi không hợp lệ.");
+        }
+        Promotion p = promotionRepository.findByCode(code.trim().toUpperCase());
+        if (p == null) {
+            throw new PromotionException(404, "Mã khuyến mãi không tồn tại: " + code);
+        }
+
+        String status = "DANG_DIEN_RA";
+        LocalDateTime now = LocalDateTime.now();
+        if (Boolean.TRUE.equals(p.getDeleted())) {
+            status = "DA_XOA";
+        } else if (p.getNgayKetThuc() != null && p.getNgayKetThuc().isBefore(now)) {
+            status = "HET_HAN";
+        } else if (p.getSoLuongDung() != null && p.getSoLuongDung() <= 0) {
+            status = "HET_LUOT";
+        } else if (p.getNgayBatDau() != null && p.getNgayBatDau().isAfter(now)) {
+            status = "SAP_DIEN_RA";
+        }
+
+        PromotionResponse.AdminPromotionItem item = new PromotionResponse.AdminPromotionItem(
+                p.getMaKhuyenMai(),
+                p.getTenKhuyenMai(),
+                p.getLoaiKhuyenMai() != null ? p.getLoaiKhuyenMai().toString() : "TIENMAT",
+                p.getGiaTriGiam() != null ? p.getGiaTriGiam().doubleValue() : 0.0,
+                p.getGiamToiDa() != null ? p.getGiamToiDa().doubleValue() : null,
+                p.getDonHangToiThieu() != null ? p.getDonHangToiThieu().doubleValue() : 0.0,
+                p.getSoLuongDung() != null ? p.getSoLuongDung() : 0,
+                p.getNgayBatDau() != null ? p.getNgayBatDau().toString() : null,
+                p.getNgayKetThuc() != null ? p.getNgayKetThuc().toString() : null,
+                Boolean.TRUE.equals(p.getDeleted()),
+                status
+        );
+        item.setDescription(p.getMoTa());
+
+        return new ApiResponse<>(200, "Lấy chi tiết khuyến mãi thành công", item);
+    }
 }

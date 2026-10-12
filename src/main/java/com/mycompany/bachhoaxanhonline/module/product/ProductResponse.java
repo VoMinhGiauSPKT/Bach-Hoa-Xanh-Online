@@ -75,6 +75,7 @@ public class ProductResponse {
         private CategoryInfo category;
         private SupplierInfo supplier;
         private BigDecimal price;
+        private BigDecimal importPrice;
         private Double vat;
         private String unit;
         private Integer stock;
@@ -90,7 +91,7 @@ public class ProductResponse {
 
         public ProductDetailData(String productId, String productName, String imageUrl,
                                  CategoryInfo category, SupplierInfo supplier,
-                                 BigDecimal price, Double vat, String unit, Integer stock,
+                                 BigDecimal price, BigDecimal importPrice, Double vat, String unit, Integer stock,
                                  LocalDate expiryDate, Double ratingAverage, Long totalReviews) {
             this.productId = productId;
             this.productName = productName;
@@ -98,12 +99,20 @@ public class ProductResponse {
             this.category = category;
             this.supplier = supplier;
             this.price = price;
+            this.importPrice = importPrice;
             this.vat = vat;
             this.unit = unit;
             this.stock = stock;
             this.expiryDate = expiryDate;
             this.ratingAverage = ratingAverage;
             this.totalReviews = totalReviews;
+        }
+
+        public ProductDetailData(String productId, String productName, String imageUrl,
+                                 CategoryInfo category, SupplierInfo supplier,
+                                 BigDecimal price, Double vat, String unit, Integer stock,
+                                 LocalDate expiryDate, Double ratingAverage, Long totalReviews) {
+            this(productId, productName, imageUrl, category, supplier, price, null, vat, unit, stock, expiryDate, ratingAverage, totalReviews);
         }
 
         public String getProductId() {
@@ -152,6 +161,14 @@ public class ProductResponse {
 
         public void setPrice(BigDecimal price) {
             this.price = price;
+        }
+
+        public BigDecimal getImportPrice() {
+            return importPrice;
+        }
+
+        public void setImportPrice(BigDecimal importPrice) {
+            this.importPrice = importPrice;
         }
 
         public Double getVat() {
