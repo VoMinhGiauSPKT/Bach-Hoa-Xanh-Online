@@ -339,7 +339,11 @@ public class ReviewRepository {
     public long countAdminReviews(Boolean isDeleted, String productId, String customerId, Integer rating, String keyword) {
         EntityManager em = JpaUtil.getEntityManager();
         try {
-            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM \"DanhGia\" dg WHERE 1=1 ");
+            StringBuilder sql = new StringBuilder(
+                    "SELECT COUNT(*) FROM \"DanhGia\" dg "
+                    + "LEFT JOIN \"NguoiDung\" nd ON dg.\"maKhachHang\" = nd.\"maNguoiDung\" "
+                    + "LEFT JOIN \"SanPham\" sp ON dg.\"maSanPham\" = sp.\"maSanPham\" "
+                    + "WHERE 1=1 ");
             appendAdminFilters(sql, isDeleted, productId, customerId, rating, keyword);
 
             Query q = em.createNativeQuery(sql.toString());
@@ -443,7 +447,11 @@ public class ReviewRepository {
             sql.append("AND dg.\"soSao\" = :rating ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND LOWER(COALESCE(dg.\"noiDung\", '')) LIKE :keyword ");
+            sql.append("AND (LOWER(COALESCE(dg.\"noiDung\", '')) LIKE :keyword "
+                    + "OR LOWER(COALESCE(sp.\"tenSanPham\", '')) LIKE :keyword "
+                    + "OR LOWER(COALESCE(sp.\"maSanPham\", '')) LIKE :keyword "
+                    + "OR LOWER(COALESCE(nd.\"tenND\", '')) LIKE :keyword "
+                    + "OR LOWER(COALESCE(nd.\"soDienThoai\", '')) LIKE :keyword) ");
         }
     }
 

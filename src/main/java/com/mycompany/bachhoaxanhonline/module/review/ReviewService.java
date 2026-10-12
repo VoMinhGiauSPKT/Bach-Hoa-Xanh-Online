@@ -202,9 +202,7 @@ public class ReviewService {
     public ApiResponse<ReviewResponse.AdminReviewsData> getAdminReviews(
             Boolean isDeleted, String productId, String customerId, Integer rating, String keyword, int page, int limit) {
 
-        if (isDeleted == null) {
-            isDeleted = Boolean.FALSE; // Mặc định false (chỉ lấy bài đang hiển thị)
-        }
+        // Nếu isDeleted == null thì không lọc theo Deleted (hiển thị tất cả trạng thái)
 
         if (rating != null && (rating < 1 || rating > 5)) {
             throw new ReviewException(400, "Số sao không hợp lệ (phải từ 1 đến 5 sao)");
