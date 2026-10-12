@@ -211,8 +211,8 @@ public class PaymentService {
                     // 1. Tìm Payment theo maTT (orderCode)
                     Payment payment = em.find(Payment.class, String.valueOf(orderCode));
                     Order order = null;
-                    if (payment != null) {
-                        order = payment.getOrder();
+                    if (payment != null && payment.getOrder() != null) {
+                        order = em.find(Order.class, payment.getOrder().getMaDonHang());
                     }
 
                     // 2. Fallback: Tìm qua ghiChu của đơn hàng
@@ -226,7 +226,7 @@ public class PaymentService {
 
                     if (order != null && ("CHUATHANHTOAN".equalsIgnoreCase(order.getTrangThai()) || "PENDING".equalsIgnoreCase(order.getTrangThai()))) {
                         order.setTrangThai("DATHANHTOAN");
-                        em.merge(order);
+                        order = em.merge(order);
 
                         BigDecimal amountPaid = data.getAmount() != null
                                 ? BigDecimal.valueOf(data.getAmount())
