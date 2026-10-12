@@ -2,11 +2,11 @@ package com.mycompany.bachhoaxanhonline.module.auth;
 
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import com.mycompany.bachhoaxanhonline.util.JwtUtil;
 import com.mycompany.bachhoaxanhonline.util.PasswordUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.util.Optional;
-import java.util.UUID;
 
 public class AuthService {
 
@@ -72,8 +72,8 @@ public class AuthService {
         // 3. Băm mật khẩu bằng BCrypt
         String hashedPass = PasswordUtil.hash(request.getPassword());
 
-        // 4. Sinh UUID cho maNguoiDung
-        String customerId = UUID.randomUUID().toString();
+        // 4. Sinh mã tự tăng chuẩn cho maNguoiDung (KH0001, KH0002...)
+        String customerId = CodeGeneratorUtil.generateNextCode("Auth", "maNguoiDung", "KH", 4);
         Auth auth = new Auth(
                 customerId,
                 request.getFullName(),

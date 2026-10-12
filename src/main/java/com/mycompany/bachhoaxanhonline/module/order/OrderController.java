@@ -39,7 +39,7 @@ public class OrderController extends HttpServlet {
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
                 int page = 1;
-                int limit = 10;
+                int limit = 20;
                 try {
                     if (req.getParameter("page") != null) page = Integer.parseInt(req.getParameter("page"));
                     if (req.getParameter("limit") != null) limit = Integer.parseInt(req.getParameter("limit"));

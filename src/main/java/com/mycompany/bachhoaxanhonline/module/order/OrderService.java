@@ -6,11 +6,11 @@ import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import com.mycompany.bachhoaxanhonline.module.cart.CartResponse.LineItemData;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class OrderService {
 
@@ -70,8 +70,64 @@ public class OrderService {
                 totalAmount = totalAmount.add(item.getThanhTien());
             }
 
+            // 2.5. Xử lý áp dụng mã khuyến mãi (nếu có)
+            BigDecimal discountAmount = BigDecimal.ZERO;
+            String promoCode = request.getMaKhuyenMai();
+            if (promoCode != null && !promoCode.trim().isEmpty()) {
+                promoCode = promoCode.trim().toUpperCase();
+                List<Promotion> promos = em.createQuery(
+                        "SELECT p FROM Promotion p WHERE UPPER(TRIM(p.maKhuyenMai)) = :code AND p.deleted = false", Promotion.class)
+                        .setParameter("code", promoCode)
+                        .getResultList();
+
+                if (promos.isEmpty()) {
+                    throw new OrderException(400, "Mã khuyến mãi (" + promoCode + ") không tồn tại hoặc đã bị xóa");
+                }
+
+                Promotion promo = promos.get(0);
+                LocalDateTime now = LocalDateTime.now();
+
+                if (promo.getNgayBatDau() != null && now.isBefore(promo.getNgayBatDau())) {
+                    throw new OrderException(400, "Chương trình khuyến mãi (" + promoCode + ") chưa bắt đầu");
+                }
+                if (promo.getNgayKetThuc() != null && now.isAfter(promo.getNgayKetThuc())) {
+                    throw new OrderException(400, "Mã khuyến mãi (" + promoCode + ") đã hết hạn sử dụng");
+                }
+                if (promo.getSoLuongDung() != null && promo.getSoLuongDung() <= 0) {
+                    throw new OrderException(400, "Mã khuyến mãi (" + promoCode + ") đã hết lượt sử dụng");
+                }
+
+                BigDecimal minOrder = promo.getDonHangToiThieu() != null ? promo.getDonHangToiThieu() : BigDecimal.ZERO;
+                if (totalAmount.compareTo(minOrder) < 0) {
+                    throw new OrderException(400, String.format("Đơn hàng chưa đạt giá trị tối thiểu %,.0fđ để áp dụng voucher", minOrder.doubleValue()));
+                }
+
+                String pType = promo.getLoaiKhuyenMai();
+                if ("TIENMAT".equalsIgnoreCase(pType)) {
+                    discountAmount = promo.getGiaTriGiam() != null ? promo.getGiaTriGiam() : BigDecimal.ZERO;
+                } else if ("PHANTRAM".equalsIgnoreCase(pType)) {
+                    double percent = promo.getGiaTriGiam() != null ? promo.getGiaTriGiam().doubleValue() : 0.0;
+                    discountAmount = totalAmount.multiply(BigDecimal.valueOf(percent / 100.0));
+                    if (promo.getGiamToiDa() != null && promo.getGiamToiDa().compareTo(BigDecimal.ZERO) > 0) {
+                        if (discountAmount.compareTo(promo.getGiamToiDa()) > 0) {
+                            discountAmount = promo.getGiamToiDa();
+                        }
+                    }
+                }
+
+                // Tiền giảm không vượt quá tổng giá trị đơn hàng
+                if (discountAmount.compareTo(totalAmount) > 0) {
+                    discountAmount = totalAmount;
+                }
+
+                // Trừ 1 lượt dùng của voucher
+                em.createNativeQuery("UPDATE \"KhuyenMai\" SET \"soLuongDung\" = GREATEST(0, \"soLuongDung\" - 1) WHERE UPPER(TRIM(\"maKhuyenMai\")) = UPPER(TRIM(:pCode))")
+                        .setParameter("pCode", promo.getMaKhuyenMai())
+                        .executeUpdate();
+            }
+
             // 3. Create Order
-            String orderId = UUID.randomUUID().toString();
+            String orderId = CodeGeneratorUtil.generateNextCode(em, "Order", "maDonHang", "HD", 4);
             order.setMaDonHang(orderId);
             order.setMaKhachHang(customerId);
             order.setNgayLap(LocalDateTime.now());
@@ -84,8 +140,8 @@ public class OrderService {
             // Set defaults for new NOT NULL columns in DB
             order.setDeleted(false);
             order.setNgayHetHanThanhToan(LocalDateTime.now().plusDays(3));
-            order.setTienGiamGia(BigDecimal.ZERO);
-            order.setTongTienSauGiamGia(totalAmount);
+            order.setTienGiamGia(discountAmount);
+            order.setTongTienSauGiamGia(totalAmount.subtract(discountAmount));
             String pMethod = request.getPhuongThucTT();
             if (pMethod == null || pMethod.trim().isEmpty()) {
                 pMethod = request.getGhiChu();
@@ -137,7 +193,7 @@ public class OrderService {
             em.merge(order);
 
             Payment payment = new Payment();
-            payment.setMaTT(UUID.randomUUID().toString());
+            payment.setMaTT(CodeGeneratorUtil.generateNextCode(em, "Payment", "maTT", "TT", 4));
             payment.setOrder(order);
             payment.setSoTien(order.getTongTien());
             payment.setTrangThai("THANHCONG");
@@ -160,14 +216,19 @@ public class OrderService {
 
     public ApiResponse<OrderResponse.OrderListData> getOrders(String customerId, String role, int page, int limit) {
         List<Order> orders;
+        long total;
         if ("CUSTOMER".equalsIgnoreCase(role)) {
             orders = orderRepository.findByCustomerId(customerId, page, limit);
+            total = orderRepository.countByCustomerId(customerId);
         } else {
             orders = orderRepository.findAll(page, limit);
+            total = orderRepository.countAll();
         }
 
         OrderResponse.OrderListData data = new OrderResponse.OrderListData();
         data.setCurrentPage(page);
+        data.setTotal(total);
+        data.setTotalPages((int) Math.ceil((double) total / Math.max(1, limit)));
         
         List<OrderResponse.OrderSummary> summaries = new ArrayList<>();
         for (Order o : orders) {
@@ -175,6 +236,8 @@ public class OrderService {
             summary.setMaDonHang(o.getMaDonHang());
             summary.setNgayLap(o.getNgayLap());
             summary.setTongTien(o.getTongTien());
+            summary.setTienGiamGia(o.getTienGiamGia() != null ? o.getTienGiamGia() : BigDecimal.ZERO);
+            summary.setTongTienSauGiamGia(o.getTongTienSauGiamGia() != null ? o.getTongTienSauGiamGia() : o.getTongTien());
             summary.setTrangThai(o.getTrangThai());
             summary.setPhuongThucTT(resolvePaymentMethod(o));
             int itemCount = 0;
@@ -227,6 +290,8 @@ public class OrderService {
             data.setMaKhachHang(order.getMaKhachHang());
             data.setNgayLap(order.getNgayLap());
             data.setTongTien(order.getTongTien());
+            data.setTienGiamGia(order.getTienGiamGia() != null ? order.getTienGiamGia() : BigDecimal.ZERO);
+            data.setTongTienSauGiamGia(order.getTongTienSauGiamGia() != null ? order.getTongTienSauGiamGia() : order.getTongTien());
             data.setTrangThai(order.getTrangThai());
             data.setPhuongThucTT(resolvePaymentMethod(order));
             data.setTenNguoiNhan(order.getTenNguoiNhan());

@@ -159,6 +159,10 @@ public class JwtAuthFilter implements Filter {
             if (path.equals("/product") || path.startsWith("/product/")) {
                 return true;
             }
+            // Khuyến mãi khả dụng công khai: GET /promotion/available
+            if (path.equals("/promotion/available") || path.startsWith("/promotion/available")) {
+                return true;
+            }
         }
 
         // Tài nguyên tĩnh (CSS, JS, Fonts, Images)

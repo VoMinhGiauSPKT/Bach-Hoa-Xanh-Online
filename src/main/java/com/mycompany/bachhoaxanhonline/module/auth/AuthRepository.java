@@ -5,8 +5,8 @@ import com.mycompany.bachhoaxanhonline.config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.util.Optional;
-import java.util.UUID;
 
 public class AuthRepository {
 
@@ -126,8 +126,8 @@ public class AuthRepository {
                     .setParameter("maKhachHang", auth.getMaNguoiDung())
                     .executeUpdate();
 
-            // 3. Tạo giỏ hàng rỗng cho khách hàng mới
-            String cartId = "GH_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+            // 3. Tạo giỏ hàng rỗng cho khách hàng mới với mã chuẩn GH0001, GH0002...
+            String cartId = CodeGeneratorUtil.generateNextCode(em, "Cart", "maGioHang", "GH", 4);
             em.createNativeQuery(
                     "INSERT INTO \"GioHang\" (\"maGioHang\", \"Deleted\", \"tongTien\", \"maKhachHang\") VALUES (:cartId, false, 0, :maKhachHang)")
                     .setParameter("cartId", cartId)

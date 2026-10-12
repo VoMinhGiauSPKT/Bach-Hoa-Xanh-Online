@@ -136,7 +136,7 @@ public class EmployeeController extends HttpServlet {
 
     private void handleGetEmployees(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         int page = getIntParameter(req, "page", 1);
-        int limit = getIntParameter(req, "limit", 10);
+        int limit = getIntParameter(req, "limit", 20);
         String keyword = req.getParameter("keyword");
         String position = req.getParameter("position");
         Boolean status = getBooleanParameter(req, "status");

@@ -3,6 +3,7 @@ package com.mycompany.bachhoaxanhonline.module.product;
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
 import com.mycompany.bachhoaxanhonline.module.category.CategoryRepository;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,7 @@ public class ProductService {
             }
         }
 
-        int limit = 12;
+        int limit = 20;
         if (limitStr != null && !limitStr.trim().isEmpty()) {
             try {
                 limit = Integer.parseInt(limitStr.trim());
@@ -184,9 +185,6 @@ public class ProductService {
         if (request == null) {
             throw new ProductException(400, "Dữ liệu yêu cầu không được để trống");
         }
-        if (request.getProductId() == null || request.getProductId().trim().isEmpty()) {
-            throw new ProductException(400, "Thiếu thông tin bắt buộc: productId không được để trống");
-        }
         if (request.getProductName() == null || request.getProductName().trim().isEmpty()) {
             throw new ProductException(400, "Thiếu thông tin bắt buộc: productName không được để trống");
         }
@@ -223,9 +221,14 @@ public class ProductService {
             throw new ProductException(400, "Thiếu thông tin bắt buộc: vat không hợp lệ");
         }
 
-        String productId = request.getProductId().trim();
-        if (productRepository.existsById(productId)) {
-            throw new ProductException(409, "Mã sản phẩm/mã lô (productId) đã tồn tại trong hệ thống.");
+        String productId = request.getProductId();
+        if (productId != null && !productId.trim().isEmpty()) {
+            productId = productId.trim().toUpperCase();
+            if (productRepository.existsById(productId)) {
+                throw new ProductException(409, "Mã sản phẩm (" + productId + ") đã tồn tại trong hệ thống.");
+            }
+        } else {
+            productId = CodeGeneratorUtil.generateNextCode("Product", "maSanPham", "SP", 4);
         }
 
         if (!categoryRepository.existsById(request.getCategoryId().trim())) {

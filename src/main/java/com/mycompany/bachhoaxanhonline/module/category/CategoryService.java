@@ -2,10 +2,10 @@ package com.mycompany.bachhoaxanhonline.module.category;
 
 import com.mycompany.bachhoaxanhonline.common.ApiResponse;
 import com.mycompany.bachhoaxanhonline.entity.*;
+import com.mycompany.bachhoaxanhonline.util.CodeGeneratorUtil;
 import com.mycompany.bachhoaxanhonline.util.ValidationUtil;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class CategoryService {
@@ -75,12 +75,12 @@ public class CategoryService {
 
         String categoryId = request.getCategoryId();
         if (categoryId != null && !categoryId.trim().isEmpty()) {
-            categoryId = categoryId.trim();
+            categoryId = categoryId.trim().toUpperCase();
             if (categoryRepository.existsById(categoryId)) {
                 throw new CategoryException(409, "Mã loại sản phẩm đã tồn tại: " + categoryId);
             }
         } else {
-            categoryId = "LSP_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+            categoryId = CodeGeneratorUtil.generateNextCode("Category", "maLoaiSanPham", "DM", 4);
         }
 
         String categoryName = request.getCategoryName().trim();

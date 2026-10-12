@@ -10,6 +10,7 @@ public class OrderRequest {
 
         private String ghiChu;
         private String phuongThucTT;
+        private String maKhuyenMai;
 
         public String getTenNguoiNhan() {
             return tenNguoiNhan;
@@ -49,6 +50,14 @@ public class OrderRequest {
 
         public void setPhuongThucTT(String phuongThucTT) {
             this.phuongThucTT = phuongThucTT;
+        }
+
+        public String getMaKhuyenMai() {
+            return maKhuyenMai;
+        }
+
+        public void setMaKhuyenMai(String maKhuyenMai) {
+            this.maKhuyenMai = maKhuyenMai;
         }
     }
 }

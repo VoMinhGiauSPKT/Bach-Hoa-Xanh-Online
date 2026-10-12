@@ -102,6 +102,7 @@ public class PromotionResponse {
             this.estimatedDiscount = estimatedDiscount;
         }
 
+        @com.fasterxml.jackson.annotation.JsonProperty("isEligible")
         public boolean isEligible() {
             return isEligible;
         }
