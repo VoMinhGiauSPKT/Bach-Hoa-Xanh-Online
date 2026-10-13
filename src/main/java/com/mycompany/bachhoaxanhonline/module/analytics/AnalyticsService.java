@@ -23,28 +23,36 @@ public class AnalyticsService {
     private static final DateTimeFormatter MONTH_KEY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     public ApiResponse<AnalyticsResponse.OverviewData> getOverview() {
+        return getOverview("week");
+    }
+
+    public ApiResponse<AnalyticsResponse.OverviewData> getOverview(String period) {
+        String safePeriod = (period != null && !period.trim().isEmpty()) ? period.trim().toLowerCase() : "week";
         EntityManager em = JpaUtil.getEntityManager();
         try {
             AnalyticsResponse.OverviewData overview = new AnalyticsResponse.OverviewData();
+            LocalDate today = LocalDate.now();
 
-            // 1. Lấy danh sách đơn hàng không bị xóa
             List<Order> orders = em.createQuery(
                     "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.lineItems WHERE (o.deleted IS NULL OR o.deleted = false) ORDER BY o.ngayLap DESC",
                     Order.class
             ).getResultList();
 
-            // Lấy trước map sản phẩm đang hoạt động để tra cứu giá nhập chuẩn xác
             Map<String, Product> productMap = getActiveProductMap(em);
 
             BigDecimal totalPaidRevenue = BigDecimal.ZERO;
             BigDecimal totalOriginalRevenue = BigDecimal.ZERO;
             BigDecimal totalDiscount = BigDecimal.ZERO;
             BigDecimal totalCogs = BigDecimal.ZERO;
+            long totalOrdersCount = 0L;
             long paidOrdersCount = 0L;
             long cancelledOrdersCount = 0L;
             long voucherUsedCount = 0L;
 
             for (Order order : orders) {
+                if (!isOrderInPeriod(order, safePeriod, today)) continue;
+
+                totalOrdersCount++;
                 String status = order.getTrangThai() != null ? order.getTrangThai().trim().toUpperCase() : "";
 
                 if ("DATHANHTOAN".equals(status)) {
@@ -79,7 +87,7 @@ public class AnalyticsService {
                 }
             }
 
-            overview.setTotalOrders((long) orders.size());
+            overview.setTotalOrders(totalOrdersCount);
             overview.setPaidOrdersCount(paidOrdersCount);
             overview.setCancelledOrdersCount(cancelledOrdersCount);
             overview.setVoucherUsedCount(voucherUsedCount);
@@ -106,7 +114,6 @@ public class AnalyticsService {
                     Product.class
             ).getResultList();
 
-            LocalDate today = LocalDate.now();
             long lowStock = 0L;
             long expiring = 0L;
 
@@ -133,7 +140,7 @@ public class AnalyticsService {
     }
 
     public ApiResponse<AnalyticsResponse.ChartData> getChartData(String period, Integer daysParam) {
-        String safePeriod = (period != null && !period.trim().isEmpty()) ? period.trim().toLowerCase() : "day";
+        String safePeriod = (period != null && !period.trim().isEmpty()) ? period.trim().toLowerCase() : "week";
         EntityManager em = JpaUtil.getEntityManager();
         try {
             Map<String, Product> productMap = getActiveProductMap(em);
@@ -145,44 +152,61 @@ public class AnalyticsService {
             LocalDate today = LocalDate.now();
             Map<String, AnalyticsResponse.ChartPoint> pointMap = new LinkedHashMap<>();
 
-            if ("year".equals(safePeriod)) {
-                // Nhóm theo năm (3 năm gần nhất)
-                int currentYear = today.getYear();
-                for (int y = currentYear - 2; y <= currentYear; y++) {
-                    String key = String.valueOf(y);
-                    pointMap.put(key, new AnalyticsResponse.ChartPoint("Năm " + y, key));
+            if ("today".equals(safePeriod) || "day".equals(safePeriod)) {
+                // Hôm nay: Hiển thị 24 khung giờ (00h -> 23h)
+                for (int h = 0; h < 24; h++) {
+                    String key = String.format("%02d:00", h);
+                    String label = String.format("%02dh", h);
+                    pointMap.put(key, new AnalyticsResponse.ChartPoint(label, "Khung giờ " + key));
                 }
 
                 for (Order o : orders) {
                     if (o.getNgayLap() == null) continue;
-                    String yKey = String.valueOf(o.getNgayLap().getYear());
-                    AnalyticsResponse.ChartPoint point = pointMap.computeIfAbsent(yKey, k -> new AnalyticsResponse.ChartPoint("Năm " + k, k));
-                    accumulateOrderToPoint(o, point, productMap);
+                    if (!o.getNgayLap().toLocalDate().isEqual(today)) continue;
+                    int h = o.getNgayLap().getHour();
+                    String hKey = String.format("%02d:00", h);
+                    if (pointMap.containsKey(hKey)) {
+                        accumulateOrderToPoint(o, pointMap.get(hKey), productMap);
+                    }
                 }
             } else if ("month".equals(safePeriod)) {
-                // Nhóm theo 12 tháng gần nhất
-                LocalDate startMonth = today.minusMonths(11).withDayOfMonth(1);
-                for (int i = 0; i < 12; i++) {
-                    LocalDate m = startMonth.plusMonths(i);
-                    String key = m.format(MONTH_KEY_FORMATTER);
-                    String label = m.format(MONTH_FORMATTER);
+                // Tháng này: Hiển thị các ngày từ ngày 01 đến ngày hôm nay của tháng hiện tại
+                int currentDay = today.getDayOfMonth();
+                for (int d = 1; d <= currentDay; d++) {
+                    LocalDate date = today.withDayOfMonth(d);
+                    String key = date.format(DATE_KEY_FORMATTER);
+                    String label = date.format(DAY_FORMATTER);
                     pointMap.put(key, new AnalyticsResponse.ChartPoint(label, key));
                 }
 
                 for (Order o : orders) {
                     if (o.getNgayLap() == null) continue;
-                    String mKey = o.getNgayLap().format(MONTH_KEY_FORMATTER);
+                    if (o.getNgayLap().getYear() != today.getYear() || o.getNgayLap().getMonthValue() != today.getMonthValue()) continue;
+                    String dKey = o.getNgayLap().toLocalDate().format(DATE_KEY_FORMATTER);
+                    if (pointMap.containsKey(dKey)) {
+                        accumulateOrderToPoint(o, pointMap.get(dKey), productMap);
+                    }
+                }
+            } else if ("year".equals(safePeriod)) {
+                // Năm nay: Hiển thị 12 tháng của năm hiện tại
+                int currentYear = today.getYear();
+                for (int m = 1; m <= 12; m++) {
+                    String key = String.format("%d-%02d", currentYear, m);
+                    String label = "Thg " + m;
+                    pointMap.put(key, new AnalyticsResponse.ChartPoint(label, "Tháng " + m + "/" + currentYear));
+                }
+
+                for (Order o : orders) {
+                    if (o.getNgayLap() == null || o.getNgayLap().getYear() != currentYear) continue;
+                    String mKey = String.format("%d-%02d", currentYear, o.getNgayLap().getMonthValue());
                     if (pointMap.containsKey(mKey)) {
                         accumulateOrderToPoint(o, pointMap.get(mKey), productMap);
                     }
                 }
             } else {
-                // Mặc định nhóm theo ngày (mặc định 7 ngày hoặc 30 ngày)
-                int days = (daysParam != null && daysParam > 0) ? daysParam : 7;
-                if (days > 90) days = 90;
-
-                LocalDate startDate = today.minusDays(days - 1);
-                for (int i = 0; i < days; i++) {
+                // Mặc định: Theo tuần (7 ngày gần nhất)
+                LocalDate startDate = today.minusDays(6);
+                for (int i = 0; i < 7; i++) {
                     LocalDate d = startDate.plusDays(i);
                     String key = d.format(DATE_KEY_FORMATTER);
                     String label = d.format(DAY_FORMATTER);
@@ -267,10 +291,16 @@ public class AnalyticsService {
     }
 
     public ApiResponse<List<AnalyticsResponse.TopProductItem>> getTopProducts(int limit) {
+        return getTopProducts(limit, "week");
+    }
+
+    public ApiResponse<List<AnalyticsResponse.TopProductItem>> getTopProducts(int limit, String period) {
         if (limit <= 0) limit = 5;
+        String safePeriod = (period != null && !period.trim().isEmpty()) ? period.trim().toLowerCase() : "week";
         EntityManager em = JpaUtil.getEntityManager();
         try {
             Map<String, Product> productMap = getActiveProductMap(em);
+            LocalDate today = LocalDate.now();
             List<Order> orders = em.createQuery(
                     "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.lineItems WHERE (o.deleted IS NULL OR o.deleted = false) AND UPPER(o.trangThai) = 'DATHANHTOAN'",
                     Order.class
@@ -279,6 +309,7 @@ public class AnalyticsService {
             Map<String, AnalyticsResponse.TopProductItem> topMap = new HashMap<>();
 
             for (Order o : orders) {
+                if (!isOrderInPeriod(o, safePeriod, today)) continue;
                 if (o.getLineItems() == null) continue;
                 for (LineItem item : o.getLineItems()) {
                     if (item.getDeleted() != null && item.getDeleted()) continue;
@@ -335,6 +366,25 @@ public class AnalyticsService {
             return new ApiResponse<>(200, "Lấy danh sách top sản phẩm thành công", result);
         } finally {
             em.close();
+        }
+    }
+
+    private boolean isOrderInPeriod(Order o, String safePeriod, LocalDate today) {
+        if (o == null || o.getNgayLap() == null) return false;
+        LocalDate orderDate = o.getNgayLap().toLocalDate();
+        switch (safePeriod) {
+            case "today":
+            case "day":
+                return orderDate.isEqual(today);
+            case "week":
+                return !orderDate.isBefore(today.minusDays(6)) && !orderDate.isAfter(today);
+            case "month":
+                return !orderDate.isBefore(today.withDayOfMonth(1)) && !orderDate.isAfter(today);
+            case "year":
+                return orderDate.getYear() == today.getYear();
+            case "all":
+            default:
+                return true;
         }
     }
 

@@ -41,7 +41,8 @@ public class AnalyticsController extends HttpServlet {
 
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty() || "/".equals(pathInfo) || "/overview".equalsIgnoreCase(pathInfo)) {
-            ApiResponse<AnalyticsResponse.OverviewData> response = analyticsService.getOverview();
+            String period = req.getParameter("period");
+            ApiResponse<AnalyticsResponse.OverviewData> response = analyticsService.getOverview(period);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             return;
         }
@@ -74,7 +75,8 @@ public class AnalyticsController extends HttpServlet {
                 }
             } catch (NumberFormatException ignored) {}
 
-            ApiResponse<List<AnalyticsResponse.TopProductItem>> response = analyticsService.getTopProducts(limit);
+            String period = req.getParameter("period");
+            ApiResponse<List<AnalyticsResponse.TopProductItem>> response = analyticsService.getTopProducts(limit, period);
             JsonUtil.sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
             return;
         }
