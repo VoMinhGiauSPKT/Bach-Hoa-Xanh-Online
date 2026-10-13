@@ -202,6 +202,11 @@ public class JwtAuthFilter implements Filter {
             return "ADMIN".equalsIgnoreCase(role);
         }
 
+        // Endpoint báo cáo & thống kê (/analytics): ADMIN và STAFF
+        if (path.equals("/analytics") || path.startsWith("/analytics/")) {
+            return "ADMIN".equalsIgnoreCase(role) || "STAFF".equalsIgnoreCase(role);
+        }
+
         // Endpoint quản lý khuyến mãi (toàn bộ /promotion NGOẠI TRỪ /promotion/available): Chỉ ADMIN
         if (path.equals("/promotion") || (path.startsWith("/promotion/") && !path.startsWith("/promotion/available"))) {
             return "ADMIN".equalsIgnoreCase(role);
